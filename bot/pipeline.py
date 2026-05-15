@@ -38,6 +38,13 @@ logger = logging.getLogger("gohappy.pipeline")
 _SEEN_IDS: set = set()
 _SEEN_MAX  = 500
 
+_TRIP_KEYWORDS = {
+    "trip", "trips", "tour", "tours", "travel", "travelling", "traveling",
+    "yatra", "safar", "holiday", "holidays", "vacation", "excursion",
+    "pilgrimage", "tirth", "destination", "itinerary", "package",
+    "outing", "sightseeing", "picnic", "trek", "trekking",
+}
+
 
 class MessagePipeline:
 
@@ -393,6 +400,32 @@ class MessagePipeline:
             polished_query = text # Fallback to original text if the LLM completely stripped a greeting
         logger.info("Polished query: %s", polished_query)
 
+        # 3.6 Trip query interception
+        if self._is_trip_query(text, polished_query):
+            trips_number = os.environ.get("TRIPS_CONTACT_NUMBER", "917973578469")
+            predefined_reply = (
+                f"For the latest trip options and offers, please reach out directly on WhatsApp: "
+                f"https://wa.me/{trips_number} 🧳\n\n"
+                f"Our trips coordinator will share all current packages and details with you!"
+            )
+            bot_response = BotResponse(answer=predefined_reply, escalation=False)
+            asyncio.create_task(
+                self._notify_trips_coordinator(
+                    user_id=user_id,
+                    display_name=display_name,
+                    text=text,
+                    channel=channel,
+                    phone_number_id=phone_number_id,
+                )
+            )
+            await self.memory.append_turn(
+                phone=user_id,
+                display_name=display_name,
+                user_text=text,
+                bot_text=predefined_reply,
+            )
+            return bot_response
+
         # ── 3.7 Semantic cache check ─────────────────────────────────────────
         # cached = await self.cache.get(polished_query)
         # if cached is not None:
@@ -476,6 +509,45 @@ class MessagePipeline:
             )
 
         return bot_response
+
+    # ══════════════════════════════════════════════════════════════════════════
+    #  TRIP QUERY HANDLING
+    # ══════════════════════════════════════════════════════════════════════════
+
+    @staticmethod
+    def _is_trip_query(text: str, polished_query: str) -> bool:
+        combined = (text + " " + polished_query).lower()
+        return any(kw in combined.split() or kw in combined for kw in _TRIP_KEYWORDS)
+
+    async def _notify_trips_coordinator(
+        self,
+        user_id:        str,
+        display_name:   str,
+        text:           str,
+        channel:        str,
+        phone_number_id: str = None,
+    ):
+        trips_number = os.environ.get("TRIPS_CONTACT_NUMBER", "917973578469")
+        if not self.wa:
+            return
+
+        if channel == "whatsapp":
+            user_link = f"https://wa.me/{user_id}"
+            user_ref = f"Quick reply: {user_link}"
+        else:
+            user_ref = f"App user ID: {user_id}"
+
+        alert = (
+            f"🧳 *New Trip Enquiry*\n\n"
+            f"*Name:* {display_name}\n"
+            f"*Query:* {text}\n\n"
+            f"{user_ref}"
+        )
+        await self.wa.send_text(
+            to=trips_number,
+            body=alert,
+            phone_number_id=phone_number_id or self.wa.phone_number_id,
+        )
 
     # ══════════════════════════════════════════════════════════════════════════
     #  ESCALATION (channel-aware)

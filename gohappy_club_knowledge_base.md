@@ -447,4 +447,259 @@ The GoHappy Club community is at the heart of everything we do — because belon
 *For more information, visit us at [www.gohappyclub.in](https://www.gohappyclub.in/) or download our app on [Android](https://play.google.com/store/apps/details?id=com.gohappyclient&hl=en_IN) / [iOS](https://apps.apple.com/in/app/gohappy-club-app-for-seniors/id6737447673)*
 
 ---
+
+## 14. KARAOKE SESSIONS
+
+---
+
+**Q: How can I fill a form in a karaoke session?**
+A: You can register for a karaoke singing session by first booking the session using the **"Book"** button located below the session details. Once the session is booked, click on the session again and you will see the **"Register to Singing"** option. After selecting it, fill in all the required details in the form. Please make sure to tick all the checkboxes at the bottom of the form, as the form will not be submitted if any required field or checkbox is left incomplete.
+
+---
+
+**Q: The karaoke session form is showing "Registration Closed". What does that mean?**
+A: "Registration Closed" means that all 14 singing slots for the karaoke session have already been filled, so the form is no longer available. However, you can still participate in the next session by booking the upcoming karaoke session and filling out the registration form early to secure your spot.
+
+---
+
+**Q: I filled out the karaoke registration form but cannot see my name on the list. What should I do?**
+A: Please make sure the form was submitted correctly. Don't forget to tick the checkboxes at the bottom of the form, as the submission will not be completed without them. If you have already submitted the form correctly and your name still does not appear on the list, please contact our support team and we will assist you further.
+
+---
+
+**Q: I am not able to join the karaoke session.**
+A: If you are unable to join the session, please make sure you have booked the session successfully and are trying to join at the correct session time. Also, check your internet connection and try reopening the app once. If the issue still continues, please contact our support team and we'll help you join the session as soon as possible.
+
+---
+
+**Q: Can I register for karaoke singing more than once in the same week?**
+A: No. You can register for karaoke singing only once a week.
+
+---
+
+**Q: I am in my free trial and I can see there are less than 14 participants on the list. Why can't I register for singing?**
+A: There are limited seats reserved for free trial members and those have already been filled. Kindly try to register for the next available slot.
+
+---
+
+**Q: I have registered for singing in a karaoke session but want to change or cancel it.**
+A: Karaoke singing registration is non-cancellable and non-refundable, so you cannot change or cancel your slot once registered.
+
+---
+
+**Q: My coins were deducted for karaoke but my name is not in the list.**
+A: This requires our support team to investigate. Please contact us and we will look into this and assist you further.
+
+---
+
+**Q: Can I book both the Antakshari and Bhajan singing session in the same week?**
+A: Yes, you can book both the Antakshari and Bhajan singing sessions in the same week.
+
+---
+
+## 15. TAMBOLA
+
+---
+
+**Q: How do I get a Tambola ticket?**
+A: Once you book the session, your Tambola ticket will be ready to view. Simply click on the **"View Ticket"** option below the Tambola session to access it.
+
+---
+
+**Q: Can I get an extra ticket to play Tambola?**
+A: No. There is no feature in the app to avail extra Tambola tickets.
+
+---
+
+**Q: I won a Full House / Lucky Dip but haven't received my gift yet. Which winning options are eligible for gifts?**
+A: For all gift-related queries, please contact our support team. They will check the details and assist you further.
+
+---
+
+## 16. SESSION RECORDINGS
+
+---
+
+**Q: How can I get the recording of a session?**
+A: You can access the recording of a session by following these steps:
+1. Click on **Profile** (top left corner)
+2. Select **"Check Past Sessions"**
+
+You will be able to view the recording there. Please note that recordings are only available for sessions that were booked from your account.
+
+---
+
+**Q: I forgot to book the session but still want to get its recording.**
+A: We're really sorry, but session recordings are only available for sessions that were booked from your account. Since the session was not booked, the recording will not be accessible.
+
+---
+
+**Q: I am a free member and want to see the recording of a session.**
+A: Session recordings are only available during the free trial period or with an active Silver or Gold membership plan. As a free member, recordings are unfortunately not accessible at this time.
+
+---
+
+**Q: I am in my free trial. Why am I not able to see recordings?**
+A: The recording feature is only available with a Silver or Gold Membership plan and is not accessible to free trial members.
+
+---
+
+## 17. JOINING SESSIONS
+
+---
+
+**Q: I am not able to join a session even though I have already booked it.**
+A: We're sorry to hear that. Kindly let us know the error you are seeing or share a screenshot of the page so that our team can check the issue and assist you further.
+
+---
+
+**Q: I booked a session and my coins were deducted, but I joined after 30 minutes. Can I still join?**
+A: No. You cannot join a session after 30 minutes from its start time.
+
+---
+
+## 18. COMMUNITY POSTS
+
+---
+
+**Q: What is a Community Post?**
+A: A Community Post is a section in our app where members can share pictures, post comments, and express their feedback or thoughts about sessions. It is a great way to interact with the community and stay connected with other members.
+
+---
+
+**Q: How can I post a comment on Community Posts?**
+A: You can post comments on the Community section by following these steps:
+1. Click on the **"Community"** option at the bottom of the home page
+2. Select **"New Post"**
+3. Choose the session from the **"Which session is this about?"** option
+4. Add your comment or feedback and post it
+
+This will allow you to share your thoughts about a specific session with the community.
+
+---
+
+**Q: What do the "For You" and "All" options in the Community Post section mean?**
+A: In the Community section:
+- **"For You"** shows posts and updates that are personalised based on the sessions you attend and your activity on the app.
+- **"All"** displays every community post shared by all members across different sessions.
+
+---
+
+**Q: I am not able to post a comment on a Community Post.**
+A: You may be unable to post if the image size is too large or the file format is not supported. Only JPEG, PNG, and JPG formats are accepted. Also, ensure your comment does not exceed the 1000-character limit. Please try again after making these adjustments, and contact our support team if the issue persists.
+
+---
+
+## 19. LOGIN & OTP ISSUES
+
+---
+
+**Q: I am not getting an OTP on my device while trying to log in.**
+A: Please make sure your mobile number has an active phone plan and that both incoming and outgoing services are working properly. If everything is working, kindly restart your device and try again. If you are still facing the issue after restarting, please contact our support team and we will assist you further.
+
+---
+
+**Q: I am not able to register my details in the app.**
+A: Please contact our support team and we will help you complete your registration.
+
+---
+
+## 20. APP TROUBLESHOOTING
+
+---
+
+**Q: The app logo is stuck / the app is not working.**
+A: Please follow these steps to resolve the issue:
+1. Open the **Settings** app on your phone
+2. Tap on **Apps**
+3. Select **GoHappy Club**
+4. Tap on **Storage**
+5. Tap **Clear Cache** and **Clear Data**
+6. Reopen the app and log in with your phone number
+
+If you still need help after trying this, please contact our support team.
+
+---
+
+**Q: The app is taking a long time to load.**
+A: Please follow these steps:
+1. Open the **Settings** app on your phone
+2. Tap on **Apps**
+3. Select **GoHappy Club**
+4. Tap on **Storage**
+5. Tap **Clear Cache** and **Clear Data**
+6. Reopen the app and log in with your phone number
+
+If the issue persists, please contact our support team for further assistance.
+
+---
+
+## 21. WORKSHOPS
+
+---
+
+**Q: Can I register for a workshop using Happy Coins?**
+A: Yes, you can register for workshops using Happy Coins.
+
+---
+
+**Q: I am not a member. Can I still register for a workshop?**
+A: No. A membership is required to register for a workshop.
+
+---
+
+**Q: Can I register for a workshop using real money (cash payment)?**
+A: No. Workshop registrations are only done through Happy Coins.
+
+---
+
+## 22. MEMBERSHIP & PAYMENTS
+
+---
+
+**Q: I want to stop the autopay for my GoHappy Club membership.**
+A: You can cancel your membership (and stop autopay) directly from the **Profile** section in the app. This will stop your autopay without any additional steps.
+
+---
+
+**Q: My membership is for 1 year but my Happy Coins got exhausted. Will I not be able to join sessions?**
+A: To continue joining sessions, you can do a **Top Up** of Happy Coins in the app. Your coins ran out before your membership end date, so a top-up will let you continue attending sessions without interruption.
+
+---
+
+**Q: I don't have online payment apps. How can I opt for a membership?**
+A: You can purchase a membership from the GoHappy Club website using the link below:
+👉 [https://gohappyclub.in/subscription-plans](https://gohappyclub.in/subscription-plans)
+
+You can also forward this link to a family member or friend so they can complete the payment on your behalf.
+
+---
+
+**Q: Is it necessary to have an account or register in the GoHappy Club app before taking a membership?**
+A: Yes. You must create an account and register in the GoHappy Club app before purchasing a membership.
+
+---
+
+## 23. MISCELLANEOUS
+
+---
+
+**Q: I raised my hand in a session to give feedback but my name wasn't called / I didn't get a chance to speak.**
+A: We're sorry you didn't get the opportunity to share your feedback during the session. Please contact our support team and we will look into this for you.
+
+---
+
+**Q: I am not able to give a feedback rating after a session.**
+A: Please contact our support team and we will assist you with this.
+
+---
+
+**Q: I didn't receive cashback Happy Coins after a session I attended from my laptop.**
+A: Please contact our support team with the session details and we will investigate and assist you further.
+
+---
+
+*For more information, visit us at [www.gohappyclub.in](https://www.gohappyclub.in/) or download our app on [Android](https://play.google.com/store/apps/details?id=com.gohappyclient&hl=en_IN) / [iOS](https://apps.apple.com/in/app/gohappy-club-app-for-seniors/id6737447673)*
+
+---
 *© GoHappy Club Private Limited | K-13, Lajpat Nagar II, New Delhi – 110024*

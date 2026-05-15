@@ -30,13 +30,15 @@ An intelligent customer support chatbot for **GoHappy Club**, India's senior com
 │  3. Load conversation state from Firestore                   │
 │  4. Indic-aware input moderation                             │
 │  5. Rewrite user query (Gemini — handles Hinglish/typos)     │
-│  6. Retrieve relevant knowledge chunks (Vertex AI RAG)       │
-│  7. Generate response (Gemini — structured JSON output)      │
-│  8. Output moderation (RAG leakage protection)               │
-│  9. Quality audit (async, fire-and-forget)                   │
-│ 10. Persist turn to Firestore                                │
-│ 11. Escalate to human admin if needed                        │
-│ 12. Compress rolling summary when threshold is hit           │
+│  6. Trip query interception (predefined reply + coordinator  │
+│     notification — skips RAG and Gemini entirely)            │
+│  7. Retrieve relevant knowledge chunks (Vertex AI RAG)       │
+│  8. Generate response (Gemini — structured JSON output)      │
+│  9. Output moderation (RAG leakage protection)               │
+│ 10. Quality audit (async, fire-and-forget)                   │
+│ 11. Persist turn to Firestore                                │
+│ 12. Escalate to human admin if needed                        │
+│ 13. Compress rolling summary when threshold is hit           │
 │                                                              │
 │  Endpoints:                                                  │
 │    GET  /webhook                — Meta webhook verification  │
@@ -105,6 +107,7 @@ cloudrun_gcp_initial/
 ├── DEPLOY.md                         # Step-by-step GCP deployment guide
 ├── run_dev.sh                        # Local dev launcher (cloudflared tunnel)
 ├── run.sh                            # Simple launcher with ngrok
+├── sync_kb_to_rag.py                 # One-shot utility: push local KB file directly to Vertex AI RAG
 ├── Test/
 │   ├── test_app_chat.py              # In-app chat + insights_update API tests (15 tests)
 │   ├── test_rag_cache.py             # Cache + filter tests (17 tests)
@@ -114,8 +117,7 @@ cloudrun_gcp_initial/
 │   ├── test_bad_queries.py           # Query rewriter test (Hinglish, typos, shortforms)
 │   ├── test_send_receive.py          # End-to-end WhatsApp API test
 │   ├── test_kb_insights.py           # KB Insights mock test
-│   ├── test_full_simulation.py       # Full conversation simulation test
-│   └── sync_kb_to_rag.py             # One-shot utility to sync KB file to Vertex AI RAG
+│   └── test_full_simulation.py       # Full conversation simulation test
 ```
 
 ---
@@ -269,13 +271,16 @@ The core orchestration layer. Supports both **WhatsApp** and **In-App** channels
 |--------|---------|
 | `handle(payload)` | WhatsApp entry point — parses webhook, handles admin commands, then delegates to core |
 | `handle_app_message(user_id, display_name, text, message_id)` | In-app entry point — returns `BotResponse` directly |
-| `_process_core(...)` | Shared brain — dedup, filter, moderation, RAG, Gemini, audit, persist |
+| `_process_core(...)` | Shared brain — dedup, filter, moderation, trip interception, RAG, Gemini, audit, persist |
+| `_is_trip_query(text, polished_query)` | Detects trip-related queries via keyword matching across original and rewritten text |
+| `_notify_trips_coordinator(...)` | Sends a WhatsApp alert to the trips coordinator with the user's name, query, and quick-reply link |
 
 **Key features:**
 
 - **Dual-Channel** — the same AI pipeline serves both WhatsApp and in-app users. WhatsApp-specific I/O (typing indicators, mark-as-read, admin commands) only runs for WhatsApp messages.
 - **Message Filtering** — blocks links, social media URLs, emoji-only, and greeting-only messages before they consume any Gemini or RAG tokens.
 - **Deduplication** — an in-memory set of the last 500 message IDs prevents duplicate processing.
+- **Trip Query Interception** — any query containing trip-related keywords (trip, tour, travel, yatra, safar, holiday, vacation, trek, etc.) is intercepted before RAG and Gemini. The user receives a predefined redirect message with a WhatsApp link to the trips coordinator (`TRIPS_CONTACT_NUMBER`). Simultaneously, the coordinator receives a WhatsApp notification containing the user's name, exact query, and a `wa.me` quick-reply link back to the user. RAG and Gemini are skipped entirely for these queries.
 - **Admin Override** — the `ADMIN_PHONE_NUMBER` can send `/resolve <PHONE>` to unpause a user (WhatsApp-only).
 - **Escalation** — when Gemini flags `escalation: true`, the bot pauses itself for that user. On WhatsApp, it alerts the admin. On the app, the `escalation` flag is returned in the API response. **Auto-unpause after 15 minutes** if no admin action is taken.
 - **Multi-Question Handling** — when a user sends a message containing multiple questions, the bot identifies and answers each one individually, escalating if any part is unanswerable.
@@ -410,6 +415,7 @@ WHATSAPP_VERIFY_TOKEN=<your-webhook-verify-token>
 
 # Admin Routing
 ADMIN_PHONE_NUMBER=<admin-phone-in-E164-format>
+TRIPS_CONTACT_NUMBER=<trips-coordinator-phone-in-E164-format>
 
 # Semantic Cache (in-memory, serverless)
 CACHE_SIMILARITY_THRESHOLD=0.92
@@ -653,7 +659,7 @@ python Test/test_cache_pipeline.py
 python Test/test_full_simulation.py
 
 # One-shot: sync local KB to Vertex AI RAG corpus (requires GCP auth)
-python Test/sync_kb_to_rag.py
+python sync_kb_to_rag.py
 ```
 
 ---
@@ -703,6 +709,8 @@ python Test/sync_kb_to_rag.py
 12. **Name Fabrication Prevention** — The system prompt, evaluator, and quality auditor all explicitly prohibit inventing or assuming customer names. Only names present in the conversation context or customer summary may be used.
 
 13. **Insights-to-KB Automation** — The `/insights_update` endpoint automates the full cycle of analyzing audit insights → applying them to the knowledge base → syncing to Vertex AI RAG, eliminating manual copy-paste steps.
+
+14. **Trip Query Interception** — Trip enquiries are intercepted after query rewriting but before RAG retrieval. This avoids burning Gemini + RAG tokens on queries that can never be answered from the knowledge base (live trip availability, pricing, and booking depend on human coordination). The bot gives the user an instant redirect, while the trips coordinator gets a WhatsApp notification with the user's name, exact query, and a one-tap `wa.me` link to reply directly to that user.
 
 ---
 
