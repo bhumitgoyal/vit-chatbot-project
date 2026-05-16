@@ -58,8 +58,6 @@ An intelligent customer support chatbot for **GoHappy Club**, India's senior com
    └──────────┘      └──────────────┘     └──────────────┘
 ```
 
-**No external cache servers** — the semantic cache runs entirely in-process on App Engine. No Redis, no VMs, no extra infrastructure.
-
 ---
 
 ## GCP Services Required
@@ -72,7 +70,7 @@ This project runs entirely on serverless/managed GCP services. **No VMs, no Redi
 | **Vertex AI (Gemini 2.5 Flash)** | Query rewrite, answer generation, summary compression | ✅ Yes |
 | **Vertex AI RAG Engine** | Knowledge retrieval from your document corpus | ✅ Yes |
 | **Cloud Firestore** | Conversation memory (per-user state) | ✅ Yes |
-| **Secret Manager** | Stores WhatsApp API tokens securely | ✅ Yes |
+| ~~Secret Manager~~ | ~~Secrets management~~ | ❌ Not needed (secrets stored in `env_variables.yaml`) |
 | ~~Cloud Build~~ | ~~Docker container builds~~ | ❌ Not needed (App Engine deploys from source) |
 | ~~Artifact Registry~~ | ~~Docker image storage~~ | ❌ Not needed |
 | ~~Redis / Memorystore~~ | ~~Cache backend~~ | ❌ Not needed |
@@ -87,6 +85,7 @@ This project runs entirely on serverless/managed GCP services. **No VMs, no Redi
 cloudrun_gcp_initial/
 ├── main.py                           # FastAPI app — webhook + in-app chat + insights update + cache + health
 ├── gohappy_club_knowledge_base.md    # Structured Q&A knowledge base (uploaded to Vertex AI RAG)
+├── sync_kb_to_rag.py                 # One-shot utility: push local KB file directly to Vertex AI RAG
 ├── bot/
 │   ├── __init__.py
 │   ├── whatsapp.py                   # WhatsApp Cloud API client (send/receive)
@@ -94,20 +93,20 @@ cloudrun_gcp_initial/
 │   ├── memory.py                     # Firestore-backed conversation state manager
 │   ├── llm.py                        # Gemini prompt engineering + JSON output parser
 │   ├── pipeline.py                   # Dual-channel message pipeline (WhatsApp + In-App)
-│   ├── moderation.py                 # Indic-aware Hinglish tone/abuse classifier (scope: profanity only)
-│   ├── evaluator.py                  # Post-response quality audit (Gemini grader with name hallucination checks)
+│   ├── moderation.py                 # Indic-aware Hinglish tone/abuse classifier
+│   ├── evaluator.py                  # Post-response quality audit (Gemini grader)
 │   ├── sheets_logger.py              # Google Sheets audit trail logger
-│   ├── rag_cache.py                  # Serverless in-memory semantic cache
+│   ├── rag_cache.py                  # In-memory cache module (built but currently disabled in pipeline)
 │   ├── message_filter.py             # Filters links, social media, emojis, greetings
 │   ├── kb_manager.py                 # Knowledge base update automation
 │   └── kb_insights.py                # KB improvement insights generator + latest insight fetcher
 ├── .env                              # Environment variables (local dev only)
 ├── requirements.txt                  # Python dependencies
 ├── app.yaml                          # App Engine configuration
+├── env_variables.yaml                # App Engine env vars (gitignored — contains secrets)
 ├── DEPLOY.md                         # Step-by-step GCP deployment guide
 ├── run_dev.sh                        # Local dev launcher (cloudflared tunnel)
-├── run.sh                            # Simple launcher with ngrok
-├── sync_kb_to_rag.py                 # One-shot utility: push local KB file directly to Vertex AI RAG
+├── run.sh                            # Local dev launcher (ngrok tunnel)
 ├── Test/
 │   ├── test_app_chat.py              # In-app chat + insights_update API tests (15 tests)
 │   ├── test_rag_cache.py             # Cache + filter tests (17 tests)
@@ -117,7 +116,12 @@ cloudrun_gcp_initial/
 │   ├── test_bad_queries.py           # Query rewriter test (Hinglish, typos, shortforms)
 │   ├── test_send_receive.py          # End-to-end WhatsApp API test
 │   ├── test_kb_insights.py           # KB Insights mock test
-│   └── test_full_simulation.py       # Full conversation simulation test
+│   ├── test_full_simulation.py       # Full conversation simulation test
+│   ├── test_evaluator.py             # Evaluator/grader output parsing and JSON repair tests
+│   ├── test_moderation.py            # Indic-aware moderation tests
+│   ├── test_kb_automation_e2e.py     # KB automation end-to-end tests
+│   ├── test_kb_update.py             # KB update tests
+│   └── test_whatsapp_api.py          # WhatsApp API integration tests
 ```
 
 ---
@@ -132,14 +136,14 @@ FastAPI application with dual-channel endpoints and admin tooling:
 |----------|--------|---------|
 | `/webhook` | `GET` | One-time Meta webhook verification (responds with `hub.challenge`) |
 | `/webhook` | `POST` | Receives all incoming WhatsApp messages; responds `200` immediately and processes in a background task |
-| **`/api/chat`** | **`POST`** | **In-app chatbot — send a message, get the bot’s reply synchronously** |
+| **`/api/chat`** | **`POST`** | **In-app chatbot — send a message, get the bot's reply synchronously** |
 | **`/api/chat/history/{user_id}`** | **`GET`** | **Retrieve conversation history for the app chat UI** |
 | `/health` | `GET` | Health check — returns `{"status": "ok"}` |
-| `/cache/stats` | `GET` | Cache hit/miss counters, hit rate, and total cached entries |
+| `/cache/stats` | `GET` | Cache hit/miss counters (cache is currently disabled — always returns zeroes) |
 | `/cache/invalidate` | `POST` | Flush all cached entries (admin use) |
 | **`/insights_update`** | **`POST`** | **One-click KB update: reads latest insights from Google Sheets → Gemini applies them to the KB → syncs to RAG** |
 
-On startup, initialises the `MessagePipeline` with all dependencies (WhatsApp client, RAG engine, Firestore memory, Gemini LLM, semantic cache). CORS middleware is enabled for mobile/web app clients.
+On startup, initialises the `MessagePipeline` with all dependencies (WhatsApp client, RAG engine, Firestore memory, Gemini LLM). CORS middleware is enabled for mobile/web app clients.
 
 ---
 
@@ -162,26 +166,19 @@ Filters out non-actionable messages **before** they enter the pipeline, saving G
 
 ---
 
-### `bot/rag_cache.py` — Semantic Cache (In-Memory, Serverless)
+### `bot/rag_cache.py` — In-Memory Cache (Built, Currently Disabled)
 
-Intercepts after query rewriting, before Vertex AI RAG retrieval. Caches responses for semantically identical queries.
+The cache module is implemented and initialised at startup, but the cache read/write calls in `pipeline.py` are currently commented out. The `/cache/stats` and `/cache/invalidate` endpoints exist but will always return empty results while the cache is disabled.
 
-**How it works:**
-1. Exact string match search against all cached entries using the rewritten query
-2. If match found → **HIT** — return cached response, skip RAG + Gemini
-3. If not found → **MISS** — run full pipeline, cache the result
+**When enabled, it would:**
+1. Check an exact string match against cached entries using the rewritten query
+2. On HIT — return cached response, skip RAG + Gemini
+3. On MISS — run full pipeline and store the result
 
-**Key properties:**
-- **No external dependencies** — runs entirely in App Engine process memory
-- **Max 1,000 entries** (~1 MB total — negligible for App Engine)
-- **TTL: 24 hours** — entries auto-expire so knowledge updates propagate
-- **Escalation-safe** — responses with `escalation: true` are never cached
-
-**Configuration** (env vars):
+**Configuration** (env vars — no effect while disabled):
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `CACHE_SIMILARITY_THRESHOLD` | Cosine similarity for a cache hit | `0.75` |
 | `CACHE_TTL_SECONDS` | Entry expiry in seconds | `86400` (24h) |
 | `CACHE_MAX_ENTRIES` | Max cached entries | `1000` |
 
@@ -244,7 +241,7 @@ Intercepts after query rewriting, before Vertex AI RAG retrieval. Caches respons
   | `self.rewrite_model` | Canonical Normalizer — rewrites broken English and Hinglish into standard English queries (20+ canonical rewrites) |
   | `self.summary_model` | Conversation compressor — generates rolling summaries |
 
-- **System Prompt** — a comprehensive, production-grade prompt baked into the module as `SYSTEM_PROMPT` (~13K chars). Includes:
+- **System Prompt** — a comprehensive, production-grade prompt baked into the module as `SYSTEM_PROMPT`. Includes:
   - **Role & Identity** — GoHappy Club customer support assistant persona
   - **Company Context** — platform overview, direct app download URLs (Apple App Store & Google Play Store), key offerings, support hours
   - **Response Instructions** — HANDLE_GREETING, REJECT (with 10+ explicit categories: biodata, matrimonial, political, chain messages, personal tasks, etc.), ANSWER, ESCALATE
@@ -253,11 +250,9 @@ Intercepts after query rewriting, before Vertex AI RAG retrieval. Caches respons
   - **Key Policies & Guardrails** — member privacy, session recording access tiers, app onboarding guidance, trip discount coupon rules, strict escalation-on-doubt
   - **Strict JSON Output Schema** — `{answer, escalation}` format
 
-- **Query Rewrite Prompt** — 20+ canonical rewrite examples covering memberships, Happy Coins, recordings, referrals, login/OTP, language change, payments, refunds, and greeting+question combos.
-
 - **Output Parsing** — enforces JSON output via Gemini's `response_mime_type="application/json"` and a response schema. Falls back to best-effort text extraction if parsing fails.
 
-- **Language Policy** — the bot **matches the user's language**. If the user writes in English, it replies in English. Hindi → Hindi. Hinglish → Hinglish. This ensures senior members can communicate naturally in their preferred language.
+- **Language Policy** — the bot **matches the user's language**. If the user writes in English, it replies in English. Hindi → Hindi. Hinglish → Hinglish.
 
 ---
 
@@ -287,7 +282,6 @@ The core orchestration layer. Supports both **WhatsApp** and **In-App** channels
 - **Language Matching** — the bot replies in the same language the user writes in (English, Hindi, Hinglish, etc.).
 - **Stick-to-Query Guardrail** — the bot only answers what was asked and escalates when it's not 100% confident, rather than guessing or volunteering tangential information.
 - **Background Summary Compression** — compresses recent turns into a rolling summary every N turns (async, doesn't block the reply).
-
 
 ---
 
@@ -326,13 +320,13 @@ The in-app chat API lets your mobile or web application use the same AI chatbot 
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `reply` | string | Bot's reply text (empty if message was filtered) |
+| `reply` | string | Bot's reply text (empty string if message was filtered) |
 | `escalation` | bool | `true` if the query was escalated to human support |
 
 **Example (curl):**
 
 ```bash
-curl -X POST https://your-app.appspot.com/api/chat \
+curl -X POST https://ghc-chatbot.el.r.appspot.com/api/chat \
   -H "Content-Type: application/json" \
   -d '{
     "user_id": "user_abc123",
@@ -376,7 +370,7 @@ If you use the same `user_id` as the WhatsApp phone number (e.g. `"919876543210"
 
 ```
 conversations/                         # Collection
-  └── <phone_number>/                  # Document (e.g. "1234567890")
+  └── <phone_number>/                  # Document (e.g. "916281456004")
         display_name:       str        # "Ramesh Kumar"
         summary:            str        # AI-generated rolling summary
         turn_count:         int        # Total turns in this session
@@ -388,13 +382,18 @@ conversations/                         # Collection
             { role: "assistant", content: "...", ts: <timestamp> },
             ...
           ]
+
+system_data/                           # Collection
+  └── knowledge_base                   # Document
+        content:    str                # Full KB markdown content
+        updated_at: timestamp
 ```
 
 ---
 
 ## Environment Variables
 
-Create a `.env` file for local development:
+Create a `.env` file for local development (copy from the template below):
 
 ```env
 # GCP
@@ -417,11 +416,6 @@ WHATSAPP_VERIFY_TOKEN=<your-webhook-verify-token>
 ADMIN_PHONE_NUMBER=<admin-phone-in-E164-format>
 TRIPS_CONTACT_NUMBER=<trips-coordinator-phone-in-E164-format>
 
-# Semantic Cache (in-memory, serverless)
-CACHE_SIMILARITY_THRESHOLD=0.92
-CACHE_TTL_SECONDS=86400
-CACHE_MAX_ENTRIES=1000
-
 # Optional
 PORT=8080
 FIRESTORE_DB=(default)
@@ -432,7 +426,7 @@ SUMMARISE_EVERY=6
 CORS_ORIGINS=*    # Comma-separated list of allowed origins, or * for all
 ```
 
-> **⚠️ Never commit `.env` to version control.** For production, use GCP Secret Manager (see [DEPLOY.md](DEPLOY.md)).
+> **⚠️ Never commit `.env` or `env_variables.yaml` to version control.** Both are gitignored. For production, pass secrets via `env_variables.yaml` (kept locally only) and reference it in `app.yaml`.
 
 ---
 
@@ -442,7 +436,7 @@ CORS_ORIGINS=*    # Comma-separated list of allowed origins, or * for all
 
 - Python 3.11+
 - GCP project with billing enabled
-- APIs enabled: **Vertex AI**, **Firestore**, **App Engine**, **Cloud Build**, **Secret Manager**
+- APIs enabled: **Vertex AI**, **Firestore**, **App Engine**
 - Meta Developer account with a **WhatsApp Business App**
 - A **Vertex AI RAG Corpus** created and populated with your knowledge base documents
 - A **Firestore (Native mode)** database created in your GCP project
@@ -458,8 +452,8 @@ git clone <repo-url> && cd cloudrun_gcp_initial
 # 2. Install dependencies
 pip install -r requirements.txt
 
-# 3. Set up .env
-cp .env.example .env   # or create from the template above
+# 3. Set up .env (create from the template above)
+cp .env .env.backup   # if you already have one
 # Fill in all values
 
 # 4. Run with the dev launcher (starts server + Cloudflare tunnel)
@@ -490,9 +484,8 @@ See [DEPLOY.md](DEPLOY.md) for the full step-by-step guide covering:
 1. Creating the Vertex AI RAG Corpus
 2. Setting up Firestore
 3. Setting local config values in env_variables.yaml
-4. Creating a service account with IAM roles
-5. Building and deploying the app configuration to App Engine
-6. Registering the WhatsApp webhook
+4. Deploying the app to App Engine
+5. Registering the WhatsApp webhook
 
 ### Quick Deploy
 
@@ -548,7 +541,7 @@ When the query *is* related to GoHappy Club, but the bot cannot answer accuratel
    /resolve <PHONE_NUMBER>
    → Bot resumes handling messages for that user
    
-   (Auto-Unpause: If 15 minutes pass, the bot will automatically unpause the user when they send their next message).
+   (Auto-Unpause: If 15 minutes pass with no admin action, the bot automatically unpauses the user on their next message.)
 ```
 
 ---
@@ -563,54 +556,47 @@ The bot includes an extensive suite of commands available to admin numbers via W
 | **Dynamic Admin** | Numbers added via `/admin_add` (stored in Firestore `config/admins`) | All commands **except** `/admin_add` and `/admin_remove` |
 
 ### 1. Update Knowledge Base (`/update_kb`)
-Whenever a user asks a question the bot doesn't know, or you launch a new feature/policy, you can update the brain of the chatbot by sending a message:
 *   **Command:** `/update_kb <your instructions>`
 *   **Example:** `/update_kb We are launching a new Platinum Membership for ₹5000/year. It includes unlimited free trips.`
-*   **What Happens:** The bot uses Gemini to surgically edit the master Knowledge Base document and sends you back the updated Markdown text as a preview message.
+*   **What Happens:** The bot uses Gemini to surgically edit the master Knowledge Base document and sends you back the updated Markdown text as a preview document.
 
 ### 2. Approve KB Update (`/approve_kb`)
-Once you review the generated draft from `/update_kb` and confirm it looks correct:
 *   **Command:** `/approve_kb`
-*   **What Happens:** The system promotes the draft to the Master Copy in Firestore. It then securely connects to Google Cloud Vertex AI, deletes the old files in the RAG Corpus, and uploads the new `.md` file. The chatbot instantly begins using the new facts!
+*   **What Happens:** Promotes the draft to master in Firestore, deletes old files from Vertex AI RAG Corpus, and uploads the new `.md` file. The chatbot instantly begins using the new facts.
 
-### 3. Generate Automated Insights (`/insights`)
-Help continuously improve the knowledge base by analyzing recent problematic conversations (frustrations, hallucinations) logged in the Audit Spreadsheet.
-*   **Command:** `/insights`
-*   **What Happens:** The bot reads the `Audit_Logs` Google Sheet, uses Gemini to analyze what went wrong, and generates actionable recommendations of exactly what paragraphs or facts to add to your knowledge base to prevent future issues. It logs these into the `Insights` tab and replies to you on WhatsApp.
+### 3. Generate Automated Insights (`insights`)
+*   **Command:** `insights` (no slash)
+*   **What Happens:** Reads the `Audit_Logs` Google Sheet, uses Gemini to analyze what went wrong in recent conversations, generates actionable KB improvement recommendations, logs them into the `Insights` tab, and replies to you on WhatsApp.
 
 ### 4. Resolve Escalation (`/resolve`)
-When the bot escalates a conversation to a human, it automatically mutes itself for that user so you can step in and chat. Once you're done helping the user, you can unmute the bot.
 *   **Command:** `/resolve <PHONE_NUMBER>`
 *   **Example:** `/resolve 919876543210`
-*   **What Happens:** The bot resumes handling automated messages for that user.
+*   **What Happens:** Unpauses the bot for that user — it resumes handling their messages automatically.
 
 ### 5. Add Admin (`/admin_add`) — Super Admin only
-Grant admin access to another phone number so they can use all bot commands (except admin management).
 *   **Command:** `/admin_add <12-digit number starting with 91>`
 *   **Example:** `/admin_add 919876543210`
-*   **Validation:** The number must be exactly 12 digits and start with `91` (Indian country code).
-*   **What Happens:** The number is added to the dynamic admin list in Firestore (`config/admins` document). They will immediately be able to use all admin commands except `/admin_add` and `/admin_remove`.
+*   **Validation:** Must be exactly 12 digits starting with `91`.
+*   **What Happens:** Adds the number to the dynamic admin list in Firestore (`config/admins`).
 
 ### 6. Remove Admin (`/admin_remove`) — Super Admin only
-Revoke admin access from a dynamically added admin.
 *   **Command:** `/admin_remove <12-digit number starting with 91>`
 *   **Example:** `/admin_remove 919876543210`
-*   **What Happens:** The number is removed from Firestore. They will no longer have access to any admin commands. Super admins (hardcoded + env var) cannot be removed.
+*   **What Happens:** Removes the number from Firestore. Super admins cannot be removed.
 
 ### 7. One-Click Insights-to-KB Update (`POST /insights_update`)
-Automates the full cycle of reading insights → updating the knowledge base → syncing to RAG in a single HTTP call.
 *   **Endpoint:** `POST /insights_update`
-*   **Prerequisites:** You must have run `/insights` at least once to populate the "KB Insights" tab.
+*   **Prerequisites:** You must have run `insights` at least once to populate the "KB Insights" tab.
 *   **What Happens:**
     1. Reads the **last row** from the "KB Insights" tab in the Google Audit Sheet
-    2. Feeds the insight text to **Gemini** to surgically update the master Knowledge Base
+    2. Feeds the insight text to **Gemini** to update the master Knowledge Base
     3. Saves the updated KB to Firestore
     4. **Deletes old files** from the Vertex AI RAG Corpus and **uploads the new KB**
     5. Returns a success response with the insight and new KB character counts
 
 *   **Example (curl):**
     ```bash
-    curl -X POST https://your-app.appspot.com/insights_update
+    curl -X POST https://ghc-chatbot.el.r.appspot.com/insights_update
     ```
 
 *   **Response:**
@@ -624,9 +610,8 @@ Automates the full cycle of reading insights → updating the knowledge base →
     ```
 
 *   **Error Cases:**
-    - `404` — No insights found (run `/insights` first)
+    - `404` — No insights found (run `insights` first)
     - `500` — Gemini update or RAG sync failure
-
 
 ---
 
@@ -635,8 +620,8 @@ Automates the full cycle of reading insights → updating the knowledge base →
 | Script | Tests | Purpose |
 |--------|-------|---------|
 | `test_app_chat.py` | 15 | In-app chat API endpoints + /insights_update (POST /api/chat, GET /api/chat/history, POST /insights_update, validation) |
-| `test_rag_cache.py` | 17 | In-memory cache (hit/miss/semantic/TTL/escalation) + message filter (links/emoji/greetings) |
-| `test_cache_pipeline.py` | 18 | End-to-end pipeline: proves RAG + Gemini are SKIPPED on cache HIT |
+| `test_rag_cache.py` | 17 | In-memory cache (hit/miss/TTL/escalation) + message filter (links/emoji/greetings) |
+| `test_cache_pipeline.py` | 18 | End-to-end pipeline integration tests |
 | `test_pipeline.py` | — | Pipeline unit tests — simulates webhook payloads locally |
 | `test_rag.py` | — | Tests RAG retrieval quality against the knowledge corpus |
 | `test_bad_queries.py` | — | Tests the query rewriter with broken English, Hinglish, and shortforms |
@@ -644,6 +629,8 @@ Automates the full cycle of reading insights → updating the knowledge base →
 | `test_send_receive.py` | — | End-to-end test — sends real messages via WhatsApp API |
 | `test_kb_insights.py` | — | KB Insights generation mock test |
 | `test_evaluator.py` | — | Evaluator/grader output parsing and JSON repair tests |
+| `test_moderation.py` | — | Indic-aware moderation classifier tests |
+| `test_kb_automation_e2e.py` | — | KB automation end-to-end tests |
 
 ```bash
 # Run all API tests (chat + insights_update) — no GCP creds needed
@@ -674,10 +661,8 @@ python sync_kb_to_rag.py
 | **Knowledge Retrieval** | Vertex AI RAG Engine | SDK 1.71.1 |
 | **Conversation Memory** | Google Cloud Firestore (Native mode) | SDK 2.16.0 |
 | **Messaging** | WhatsApp Business Cloud API (Meta) | Graph API v19.0 |
-| **Exact Match Cache** | Python Dict (in-memory) | — |
 | **HTTP Client** | httpx (async) | 0.27.0 |
 | **Deployment** | GCP App Engine Standard (F2 Instance) | — |
-| **Secrets** | GCP Secret Manager | — |
 | **Local Tunnelling** | Cloudflare Quick Tunnel (`cloudflared`) | — |
 
 ---
@@ -688,29 +673,27 @@ python sync_kb_to_rag.py
 
 2. **Message filtering** — seniors frequently forward Facebook posts, YouTube videos, "Good morning" images, and random links. The filter blocks these at the gate, saving Gemini and RAG tokens.
 
-3. **In-memory semantic cache** — no external Redis or Memorystore needed. The cache runs inside App Engine process memory (~2.5 MB for 1,000 entries). On cache HIT, response time drops from 2-4s to <50ms and RAG+Gemini calls are skipped entirely. With automatic scaling, the cache stays warm across requests.
+3. **Query rewriting** — senior users often type in Hinglish, broken English, or shortforms. A lightweight Gemini call polishes the query before RAG retrieval for much better chunk matching.
 
-4. **Query rewriting** — senior users often type in Hinglish, broken English, or shortforms. A lightweight Gemini call polishes the query before RAG retrieval for much better chunk matching.
+4. **Strict JSON output** — the main Gemini call uses `response_mime_type="application/json"` with a schema to guarantee parseable `{answer, escalation}` output. A regex fallback handles rare edge cases.
 
-5. **Strict JSON output** — the main Gemini call uses `response_mime_type="application/json"` with a schema to guarantee parseable `{answer, escalation}` output. A regex fallback handles rare edge cases.
+5. **Rolling summary compression** — instead of passing the full conversation history to every LLM call (which would hit context limits and increase cost), the bot compresses older turns into a summary every N turns. Only the summary + last 10 raw turns are sent.
 
-6. **Rolling summary compression** — instead of passing the full conversation history to every LLM call (which would hit context limits and increase cost), the bot compresses older turns into a summary every N turns. Only the summary + last 10 raw turns are sent.
+6. **In-process deduplication** — Meta's webhook delivery can fire multiple times for the same message. A simple in-memory set (capped at 500 entries) prevents duplicate processing.
 
-7. **In-process deduplication** — Meta's webhook delivery can fire multiple times for the same message. A simple in-memory set (capped at 500 entries) prevents duplicate processing.
+7. **Graceful degradation** — if RAG fails, the bot still answers from its system prompt. If Gemini fails, it returns a polite error. If Firestore fails, the error is logged but the webhook still returns 200.
 
-8. **Graceful degradation** — if RAG fails, the bot still answers from its system prompt. If Gemini fails, it returns a polite error with a phone number. If Firestore fails, the error is logged but the webhook still returns 200. If the cache fails, the pipeline runs normally without it.
+8. **Language-matching replies** — the bot detects the language of each incoming message and replies in the same language (English, Hindi, Hinglish, or other Indian languages).
 
-9. **Language-matching replies** — the bot detects the language of each incoming message and replies in the same language (English, Hindi, Hinglish, or other Indian languages). This makes the experience natural for senior members who prefer their native language.
+9. **Multi-question decomposition** — when a user packs several questions into one message, the bot identifies each question, answers what it can from context, and escalates the rest — all within a single reply.
 
-10. **Multi-question decomposition** — when a user packs several questions into one message ("Gold plan ka price kya hai aur mera payment status check karo"), the bot identifies each question, answers what it can from context, and escalates the rest — all within a single reply.
+10. **Anti-Hallucination Guardrails** — the prompt explicitly forces the bot to reject unrelated trivia, forbids answering medical or financial inquiries, and escalates whenever the answer is not 100% supported by retrieved context.
 
-11. **Anti-Hallucination Guardrails** — The prompt explicitly forces the bot to reject unrelated trivia, forbids answering medical or financial inquiries, and escalates whenever the answer is not 100% supported by retrieved context. The bot sticks strictly to what was asked and never volunteers tangential facts.
+11. **Name Fabrication Prevention** — the system prompt, evaluator, and quality auditor all explicitly prohibit inventing or assuming customer names. Only names present in the conversation context may be used.
 
-12. **Name Fabrication Prevention** — The system prompt, evaluator, and quality auditor all explicitly prohibit inventing or assuming customer names. Only names present in the conversation context or customer summary may be used.
+12. **Insights-to-KB Automation** — the `/insights_update` endpoint automates the full cycle of analyzing audit insights → applying them to the knowledge base → syncing to Vertex AI RAG.
 
-13. **Insights-to-KB Automation** — The `/insights_update` endpoint automates the full cycle of analyzing audit insights → applying them to the knowledge base → syncing to Vertex AI RAG, eliminating manual copy-paste steps.
-
-14. **Trip Query Interception** — Trip enquiries are intercepted after query rewriting but before RAG retrieval. This avoids burning Gemini + RAG tokens on queries that can never be answered from the knowledge base (live trip availability, pricing, and booking depend on human coordination). The bot gives the user an instant redirect, while the trips coordinator gets a WhatsApp notification with the user's name, exact query, and a one-tap `wa.me` link to reply directly to that user.
+13. **Trip Query Interception** — trip enquiries are intercepted after query rewriting but before RAG retrieval. This avoids burning Gemini + RAG tokens on queries that can never be answered from the knowledge base (live trip availability and booking depend on human coordination). The bot gives the user an instant redirect, while the trips coordinator gets a WhatsApp notification with the user's name, exact query, and a one-tap `wa.me` link to reply directly to that user.
 
 ---
 
