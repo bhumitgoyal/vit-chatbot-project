@@ -38,8 +38,9 @@ class ConversationMemory:
 
     def __init__(self):
         db_id = os.environ.get("FIRESTORE_DB", "(default)")
+        firestore_project = os.environ.get("FIRESTORE_PROJECT_ID", os.environ["GCP_PROJECT_ID"])
         self.db = firestore.AsyncClient(
-            project=os.environ["GCP_PROJECT_ID"],
+            project=firestore_project,
             database=db_id,
         )
         self._col = self.db.collection("conversations")

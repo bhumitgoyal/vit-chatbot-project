@@ -14,11 +14,12 @@ class KnowledgeBaseManager:
     def __init__(self):
         self.db_id = os.environ.get("FIRESTORE_DB", "(default)")
         self.project = os.environ["GCP_PROJECT_ID"]
+        self.firestore_project = os.environ.get("FIRESTORE_PROJECT_ID", self.project)
         self.location = os.environ.get("GCP_LOCATION", "us-central1")
         self.corpus_name = os.environ["VERTEX_RAG_CORPUS"]
-        
+
         self.db = firestore.AsyncClient(
-            project=self.project,
+            project=self.firestore_project,
             database=self.db_id,
         )
         self.col = self.db.collection("system_data")
