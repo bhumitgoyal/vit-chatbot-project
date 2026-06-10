@@ -1,11 +1,11 @@
 runtime: python311
 instance_class: F2
+service: python-chatbot
 
 entrypoint: gunicorn -k uvicorn.workers.UvicornWorker -w 1 --timeout 120 main:app
 
 automatic_scaling:
-  min_instances: 1
-  max_instances: 3
+  max_instances: 2
   target_cpu_utilization: 0.65
 
 inbound_services:
