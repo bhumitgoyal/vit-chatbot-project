@@ -35,50 +35,54 @@ A: Absolutely. GoHappy Club is a trusted platform with a verified member base an
 
 **Q: What activities does GoHappy Club offer?**
 A: GoHappy Club offers a rich variety of activities designed to keep seniors engaged, healthy, and joyful:
-- **Daily Live Online Sessions** — Fun, Fitness, and Learning sessions conducted every day
-- **Creative & Learning Workshops** — Voice & Music, Digital Skills, Yoga & Wellness
-- **Exciting Contests** — Golden Voice Showcase, Culinary Talent, Dance & Style
-- **Offline Meetups & Events** — Festival Celebrations, Morning Walks, Cultural Events
-- **Safe & Curated Group Trips** — Senior-friendly travel experiences across India and beyond
+- **Daily Live Online Sessions** — Fun, Fitness, and Learning sessions conducted every day. Paid members can attend all sessions for free!
+- **Creative & Learning Workshops** — Voice & Music, Digital Skills, Yoga & Wellness.
+- **Exciting Contests** — Golden Voice Showcase, Culinary Talent, Dance & Style.
+- **Offline Meetups & Events** — Festival Celebrations, Morning Walks, Cultural Events.
+- **Safe & Curated Group Trips** — Senior-friendly travel experiences across India and beyond.
+- **Games & Spin the Wheel** — Engaging in-app games and a lucky spin wheel with physical and digital prizes.
+- **Collage Maker** — Create beautiful collages using your images, add frames, share, and download.
+- **Donation Campaigns** — Donate coins to NGOs for good causes.
 
 ---
 
 **Q: What types of live sessions are available?**
 A: GoHappy Club offers three categories of daily live sessions:
-- **Fun Sessions** — Light-hearted, entertaining activities to brighten your day
-- **Fitness Sessions** — Guided exercises and movement routines suited for seniors
-- **Learning Sessions** — Knowledge-sharing and skill-building activities led by experts
+- **Fun Sessions** — Light-hearted, entertaining activities to brighten your day.
+- **Fitness Sessions** — Guided exercises and movement routines suited for seniors.
+- **Learning Sessions** — Knowledge-sharing and skill-building activities led by experts.
 
 ---
 
 **Q: What workshops does GoHappy Club offer?**
 A: Our workshops are curated to help seniors explore new interests and develop skills:
-- **Voice & Music Workshops** — Discover or nurture your musical talent
-- **Digital Skills Made Simple** — Learn to use technology confidently and independently
-- **Gentle Yoga & Wellness Guidance** — Holistic wellness practices suited for all fitness levels
+- **Voice & Music Workshops** — Discover or nurture your musical talent.
+- **Digital Skills Made Simple** — Learn to use technology confidently and independently.
+- **Gentle Yoga & Wellness Guidance** — Holistic wellness practices suited for all fitness levels.
 
 ---
 
 **Q: What contests can members participate in?**
 A: Members can showcase their talents through exciting contests:
-- **Golden Voice Showcase** — A platform to display singing and vocal talent
-- **Culinary Talent Showcase** — Share your love for cooking and recipes
-- **Dance & Style Celebration** — Express yourself through dance and personal style
+- **Golden Voice Showcase** — A platform to display singing and vocal talent.
+- **Culinary Talent Showcase** — Share your love for cooking and recipes.
+- **Dance & Style Celebration** — Express yourself through dance and personal style.
 
 ---
 
 **Q: What offline events does GoHappy Club organize?**
 A: GoHappy Club regularly organizes offline events to bring the community together in person:
-- **Festival Celebrations** — Joyful gatherings to celebrate traditional festivals
-- **Morning Walk Gatherings** — A healthy and social way to start your day with fellow members
-- **Cultural & Social Events** — Events that celebrate art, culture, and community spirit
+- **Festival Celebrations** — Joyful gatherings to celebrate traditional festivals.
+- **Morning Walk Gatherings** — A healthy and social way to start your day with fellow members.
+- **Cultural & Social Events** — Events that celebrate art, culture, and community spirit.
 
 ---
 
 **Q: Do I need to attend sessions live or can I watch later?**
 A: You have full flexibility. You can join sessions live or watch recordings at your convenience:
-- **Silver Members** can access recordings from the last **14 days**
-- **Gold Members** can access recordings from the last **30 days**
+- **Premium Members (3 Months):** Recordings from the last **7 days**
+- **Premium Members (6 Months):** Recordings from the last **14 days**
+- **Premium Members (12 Months):** Recordings from the last **30 days**
 
 ---
 
@@ -86,7 +90,7 @@ A: You have full flexibility. You can join sessions live or watch recordings at 
 A: Joining a live session on GoHappy Club is simple. Here's how:
 1. Open the **GoHappy Club App**
 2. Tap on **"Book"**
-3. Select your desired session and tap **"Book for Free / Coins"**
+3. Select your desired session and tap to book (All sessions are completely free to book for paid members!)
 4. At the scheduled time, return to the app — the **"Join"** button will appear **10 minutes before** the session starts
 5. Tap **"Join"** to enter the session
 
@@ -110,53 +114,69 @@ As for sessions, they are primarily conducted in **Hindi and English** to ensure
 
 ---
 
+**Q: What is the Collage feature?**
+A: The Collage feature allows users to create beautiful collages using their own images. You can add fun frames, edit the layout, and then share or download your creations directly from the app!
+
+---
+
+**Q: What are Games and Spin the Wheel?**
+A: - **Games:** Have fun playing games right in the app! You get 5 free plays every day. After that, you can play 3 more times for 100 Happy Coins.
+- **Spin the Wheel:** Paid members can try their luck on the Spin the Wheel feature. Each spin costs 100 coins and gives you a chance to win amazing prizes like extra coins, Amazon vouchers, and physical gifts such as mugs and fitness watches.
+
+---
+
+**Q: What are Donation Campaigns?**
+A: Donation campaigns allow members to donate their Happy Coins towards good causes such as food, education, and seniors' wellbeing. These coins are donated to an NGO, and you can track the milestones and proof of donation directly in the app. You can find these campaigns by clicking on the **Campaigns** button in the Explore section on the home page.
+
+---
+
 ## 3. MEMBERSHIP PLANS
 
 ---
 
 **Q: What membership plans does GoHappy Club offer?**
-A: GoHappy Club offers two membership plans:
+A: GoHappy Club offers a **Premium Membership** with three flexible durations:
 
-### 🥈 SILVER PLAN — ₹999/year *(Introductory Price, original ₹1,200)*
-*Approximately ₹83.25 per month*
-- 1,200 Happy Coins on joining
-- Access to all Premium Sessions
-- Up to **40% Cashback** in Happy Coins on Sessions
-- Access to All Workshops & Contests
-- Flat trip discount of up to **₹1,500**
-- Free Entry to Selected Offline Events*
+### 🥉 3 Months Premium — ₹1,199 *(Introductory Price, original ₹1,500 - 20% off)*
+*Approximately ₹400 per month*
+- Access to all Live Sessions for free
+- Session Recordings for the last **7 days**
+- Access to Spin the Wheel, Games, and Donation Campaigns
+- Earn Cashback Coins on sessions and quizzes
+- Discounts on Trips
+- Digital Membership Card
+
+### 🥈 6 Months Premium — ₹1,799 *(Introductory Price, original ₹3,000 - 40% off)*
+*Approximately ₹300 per month*
+- Access to all Live Sessions for free
 - Session Recordings for the last **14 days**
-- Digital Silver Membership Card
+- Access to Spin the Wheel, Games, and Donation Campaigns
+- Earn Cashback Coins on sessions and quizzes
+- Discounts on Trips
+- Digital Membership Card
 
-### 🥇 GOLD PLAN — ₹2,499/year or ₹1,499 for 6 months *(Introductory Price)*
-*Annual: ≈ ₹208.25/month | 6-Month: ≈ ₹249.83/month*
-- **5,000 Happy Coins** (Annual) / **3,000 Happy Coins** (6-Month) on joining
-- Access to all Premium Sessions
-- Up to **60% Cashback** in Happy Coins on Sessions
-- Access to All Workshops & Contests
-- Flat trip discount of up to **₹2,000**
-- Free Entry to Selected Offline Events*
+### 🥇 12 Months Premium — ₹2,999 *(Introductory Price, original ₹6,000 - 50% off)*
+*Approximately ₹250 per month*
+- Access to all Live Sessions for free
 - Session Recordings for the last **30 days**
-- Digital Gold Membership Card
+- Access to Spin the Wheel, Games, and Donation Campaigns
+- Earn Cashback Coins on sessions and quizzes
+- Maximum Discounts on Trips
+- Digital Membership Card
 
 ---
 
 **Q: Which plan is most popular?**
-A: The **Gold Plan (12 months)** is our most popular membership plan, offering the best value with maximum Happy Coins, higher cashback on sessions, and greater trip discounts.
-
----
-
-**Q: Can I upgrade or downgrade my membership plan?**
-A: At this time, upgrading or downgrading between membership plans is not supported within the app. However, this feature is currently in development and will be made available to members very soon.
+A: The **12-Month Premium Plan** is our most popular membership plan, offering the best value per month, the maximum duration of session recordings (30 days), and the greatest benefits.
 
 ---
 
 **Q: What happens when my free trial ends?**
-A: Once your free trial period comes to an end, you have two options:
-1. **Upgrade to a Paid Membership** — Choose from the Silver or Gold plan to continue enjoying premium sessions, Happy Coins, workshop access, trip discounts, and all other exclusive member benefits.
-2. **Continue as a Free User** — You may still access and join free sessions available on the GoHappy Club app at no cost.
+A: The GoHappy Club Free Trial lasts for **14 days**. Once your free trial period comes to an end, you have two options:
+1. **Upgrade to a Premium Membership** — Choose from the 3, 6, or 12-month plan to enjoy completely free session bookings, recording access, Spin the Wheel, Trip discounts, and much more.
+2. **Continue as a Free User** — You may still access select free features, but premium perks will be locked.
 
-We recommend upgrading to a membership plan to make the most of everything GoHappy Club has to offer!
+*Note: Eligible users may have the option to extend their free trial.*
 
 ---
 
@@ -199,41 +219,31 @@ We recommend upgrading to a membership plan to make the most of everything GoHap
 ---
 
 **Q: What are Happy Coins?**
-A: Happy Coins are GoHappy Club's in-app reward currency. You earn them when you purchase a membership or actively participate in sessions and activities on the platform. Happy Coins can be used to book premium sessions, workshops, and redeem discounts on trips and other exclusive perks — making your membership even more rewarding.
+A: Happy Coins are GoHappy Club's in-app reward currency. You earn them actively on the platform, and they can be used to participate in fun features, contests, and even charitable donations.
 
 ---
 
 **Q: How do I earn Happy Coins?**
 A: You can earn Happy Coins in the following ways:
-- **Purchasing a Membership Plan** — Coins are credited instantly upon joining (1,200 for Silver; 5,000 for Gold Annual / 3,000 for Gold 6-Month)
-- **Attending Daily Sessions & Activities** — Earn cashback coins every time you participate in a session (up to 40% for Silver; up to 60% for Gold)
+- **Attending Daily Sessions & Giving Feedback** — Earn cashback coins every time you actively participate in a session.
+- **Quizzes and Spin the Wheel** — Coins can be won during in-session quizzes, games, and Spin the Wheel!
 
 ---
 
 **Q: How do I redeem Happy Coins?**
-A: Happy Coins can be redeemed for:
-- Booking **Premium Sessions** and **Workshops**
-- Availing **discounts on GoHappy Club Trips**
-- Accessing other exclusive perks within the platform
+A: Now that session bookings are completely free for paid members, your Happy Coins can be used for amazing new features:
+- **Karaoke Singing:** While joining the session to listen is free, registering to sing costs coins.
+- **Extra Tambola Tickets:** Buy up to 2 extra tickets to increase your chances of winning!
+- **Spin the Wheel:** Try your luck for physical and digital prizes (100 coins per spin).
+- **Extra Game Plays:** After exhausting your 5 free daily plays, get 3 more plays for 100 coins.
+- **Donation Campaigns:** Donate your coins to NGOs for good causes like food and education!
 
-> ⚠️ **Please Note:** You must have an **active paid membership** to redeem Happy Coins.
-
----
-
-**Q: Can I use Happy Coins without an active membership?**
-A: No. Happy Coins can only be utilized if you have an active paid membership (Silver or Gold). They are reserved exclusively for subscribed members as a value-added benefit.
-
----
-
-**Q: How much cashback do I earn on sessions?**
-A: Cashback in Happy Coins is credited after attending sessions:
-- **Silver Members:** Up to **40% cashback** in Happy Coins per session
-- **Gold Members:** Up to **60% cashback** in Happy Coins per session
+> ⚠️ **Please Note:** You must have an **active Premium membership** to fully utilize Happy Coins for features like Spin the Wheel.
 
 ---
 
 **Q: Can I recharge or top up my Happy Coins?**
-A: Yes, you can top up your Happy Coins anytime through the app, provided you have an active membership. Here's how:
+A: Yes, you can top up your Happy Coins anytime through the app. Here's how:
 1. Open the **GoHappy Club App**
 2. Tap on **Wallet** (bottom-right corner)
 3. Tap **"Add More Happy Coins"**
@@ -243,7 +253,7 @@ A: Yes, you can top up your Happy Coins anytime through the app, provided you ha
 ---
 
 **Q: Do Happy Coins expire?**
-A: No, Happy Coins **do not expire on their own**. However, they are tied to your active membership. When your membership expires, your ability to use the coins is paused — but the coins themselves are **carried forward** and remain available once you renew your membership.
+A: No, Happy Coins **do not expire on their own**. However, they are tied to your active membership. When your membership expires, your ability to use the coins for premium features is paused — but the coins themselves are **carried forward** and remain available once you renew your membership.
 
 ---
 
@@ -270,15 +280,13 @@ A: Every GoHappy Club trip is designed with seniors' needs and comfort at the fo
 
 ---
 
-**Q: How much discount do members get on trips?**
-A: GoHappy Club members enjoy exclusive flat discounts on all group trips:
-- **Silver Members:** Up to **₹1,500 off** on trips
-- **Gold Members:** Up to **₹2,000 off** on trips
+**Q: Do members get discounts on trips?**
+A: Yes! GoHappy Club members enjoy exclusive flat discounts and trip vouchers on all group trips based on their active membership plan.
 
 ---
 
 **Q: Are trip discount coupons transferable?**
-A: No. Trip discount coupons are **non-transferable** and are linked to your individual GoHappy Club account only. They cannot be shared with or applied to another member's booking.
+A: No. Trip discount coupons and vouchers are **non-transferable** and are linked to your individual GoHappy Club account only. They cannot be shared with or applied to another member's booking.
 
 ---
 
@@ -296,17 +304,12 @@ A: To book your trip with GoHappy Club Travels, please complete a bank transfer 
 | **UPI ID** | info.gohappyclub-1@okhdfcbank |
 | **UPI Number** | 7888384477 |
 
-For any assistance with your trip booking, please contact our Travel Team:
-
-*Warm Regards,*
-**GoHappy Club Travel Team**
+For any assistance with your trip booking, please contact our Travel Team.
 
 ---
 
 **Q: What destinations are covered?**
 A: GoHappy Club curates a variety of trip destinations that are updated regularly throughout the year. Since destinations and itineraries vary across trips, we recommend reaching out to our Travel Team directly for the most current and detailed information.
-
-📞 **Contact our Travel Team:**
 
 ---
 
@@ -325,9 +328,7 @@ Additional payment options may be available within the app at the time of checko
 ---
 
 **Q: I'm facing a payment issue. What should I do?**
-A: If you encounter any issue during payment — such as a failed transaction, amount deducted but membership not activated, or any other payment-related concern — please contact our official support team immediately.
-
-Our team will investigate and resolve your issue at the earliest.
+A: If you encounter any issue during payment — such as a failed transaction, amount deducted but membership not activated, or any other payment-related concern — please contact our official support team immediately. Our team will investigate and resolve your issue at the earliest.
 
 ---
 
@@ -377,18 +378,6 @@ A: Changing the app language is quick and easy:
 3. Scroll down within the profile section
 4. Tap on **"Change Language"**
 5. Select your **preferred language** from the available options
-
----
-
-**Q: How do I access recorded sessions?**
-A: To watch previously conducted sessions:
-1. Open the **GoHappy Club App**
-2. Navigate to **"My Sessions"**
-3. Tap on **"Check Past Sessions"** to browse and watch available recordings
-
-Recording access is based on your membership tier:
-- **Silver Members:** Recordings from the last **14 days**
-- **Gold Members:** Recordings from the last **30 days**
 
 ---
 
@@ -453,7 +442,7 @@ The GoHappy Club community is at the heart of everything we do — because belon
 ---
 
 **Q: How can I fill a form in a karaoke session?**
-A: You can register for a karaoke singing session by first booking the session using the **"Book"** button located below the session details. Once the session is booked, click on the session again and you will see the **"Register to Singing"** option. After selecting it, fill in all the required details in the form. Please make sure to tick all the checkboxes at the bottom of the form, as the form will not be submitted if any required field or checkbox is left incomplete.
+A: You can register for a karaoke singing session by first booking the session using the **"Book"** button located below the session details. Once the session is booked, click on the session again and you will see the **"Register to Singing"** option. This will deduct the required Happy Coins. After selecting it, fill in all the required details in the form. Please make sure to tick all the checkboxes at the bottom of the form, as the form will not be submitted if any required field or checkbox is left incomplete.
 
 ---
 
@@ -483,7 +472,7 @@ A: There are limited seats reserved for free trial members and those have alread
 ---
 
 **Q: I have registered for singing in a karaoke session but want to change or cancel it.**
-A: Karaoke singing registration is non-cancellable and non-refundable, so you cannot change or cancel your slot once registered.
+A: Karaoke singing registration is non-cancellable and non-refundable, so you cannot change or cancel your slot once registered. Your Happy Coins will not be refunded.
 
 ---
 
@@ -502,12 +491,12 @@ A: Yes, you can book both the Antakshari and Bhajan singing sessions in the same
 ---
 
 **Q: How do I get a Tambola ticket?**
-A: Once you book the session, your Tambola ticket will be ready to view. Simply click on the **"View Ticket"** option below the Tambola session to access it.
+A: Once you book the session, your primary Tambola ticket will be ready to view. Simply click on the **"View Ticket"** option below the Tambola session to access it.
 
 ---
 
 **Q: Can I get an extra ticket to play Tambola?**
-A: No. There is no feature in the app to avail extra Tambola tickets.
+A: Yes! You can now use your Happy Coins to buy up to **2 extra Tambola tickets** per session directly from the app to increase your chances of winning!
 
 ---
 
@@ -535,12 +524,12 @@ A: We're really sorry, but session recordings are only available for sessions th
 ---
 
 **Q: I am a free member and want to see the recording of a session.**
-A: Session recordings are only available during the free trial period or with an active Silver or Gold membership plan. As a free member, recordings are unfortunately not accessible at this time.
+A: Session recordings are only available during the free trial period or with an active Premium membership plan. As a free member, recordings are unfortunately not accessible at this time.
 
 ---
 
 **Q: I am in my free trial. Why am I not able to see recordings?**
-A: The recording feature is only available with a Silver or Gold Membership plan and is not accessible to free trial members.
+A: The recording feature is only available with a Premium Membership plan and is not accessible to free trial members.
 
 ---
 
@@ -553,7 +542,7 @@ A: We're sorry to hear that. Kindly let us know the error you are seeing or shar
 
 ---
 
-**Q: I booked a session and my coins were deducted, but I joined after 30 minutes. Can I still join?**
+**Q: I booked a session but I joined after 30 minutes. Can I still join?**
 A: No. You cannot join a session after 30 minutes from its start time.
 
 ---
@@ -638,18 +627,19 @@ If the issue persists, please contact our support team for further assistance.
 
 ---
 
+**Q: How do I register for a workshop?**
+A: Workshops can now be easily booked using real money (Rupees) directly from our website! Simply go to:
+👉 [www.gohappyclub.in/sessions?workshop](https://www.gohappyclub.in/sessions?workshop) to book your spot.
+
+---
+
 **Q: Can I register for a workshop using Happy Coins?**
-A: Yes, you can register for workshops using Happy Coins.
+A: No. Workshop registrations are now completed using cash payments (Rupees) rather than Happy Coins.
 
 ---
 
 **Q: I am not a member. Can I still register for a workshop?**
 A: No. A membership is required to register for a workshop.
-
----
-
-**Q: Can I register for a workshop using real money (cash payment)?**
-A: No. Workshop registrations are only done through Happy Coins.
 
 ---
 
@@ -659,11 +649,6 @@ A: No. Workshop registrations are only done through Happy Coins.
 
 **Q: I want to stop the autopay for my GoHappy Club membership.**
 A: You can cancel your membership (and stop autopay) directly from the **Profile** section in the app. This will stop your autopay without any additional steps.
-
----
-
-**Q: My membership is for 1 year but my Happy Coins got exhausted. Will I not be able to join sessions?**
-A: To continue joining sessions, you can do a **Top Up** of Happy Coins in the app. Your coins ran out before your membership end date, so a top-up will let you continue attending sessions without interruption.
 
 ---
 
