@@ -1,14 +1,6 @@
-fastapi==0.111.0
-uvicorn[standard]==0.30.1
-gunicorn==21.2.0
-httpx==0.27.0
-google-cloud-firestore==2.16.0
-google-cloud-aiplatform[preview]==1.71.1
-vertexai==1.71.1
-
-# Semantic RAG cache (in-memory, no Redis)
-
-
-
-# Post-Validation Quality Audit
-gspread>=6.0.0
+fastapi>=0.110.0
+uvicorn>=0.28.0
+pydantic>=2.6.0
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+google-auth>=2.20.0

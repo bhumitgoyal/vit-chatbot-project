@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VITopia AI — Autonomous VIT Academic & Campus Agent</title>
+  <meta name="description" content="Minimalist, context-aware AI Academic Copilot for VIT students with live VTOP timetable, attendance, marks, hostels, and faculty directory.">
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="brand-logo">
+          <div class="logo-icon">
+            <i class="fa-solid fa-cube"></i>
+          </div>
+          <div class="brand-text">
+            <span class="brand-title">VITopia <span class="badge-ai">AI</span></span>
+            <span class="brand-sub">GCP-Hosted Academic Copilot</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs (Chat vs Documentation) -->
+      <div class="header-nav-tabs">
+        <button id="tabChat" class="nav-tab active">
+          <i class="fa-solid fa-terminal"></i> Copilot
+        </button>
+        <button id="tabDocs" class="nav-tab">
+          <i class="fa-regular fa-file-lines"></i> Documentation
+        </button>
+      </div>
+
+      <div class="header-right">
+        <div id="studentStatusChip" class="student-chip">
+          <div class="status-indicator"></div>
+          <span id="chipStudentName">Not connected</span>
+          <span>•</span>
+          <span id="chipRegNo" class="chip-highlight">—</span>
+        </div>
+
+        <button id="clearChatBtn" class="btn-icon" title="Clear Conversation">
+          <i class="fa-regular fa-trash-can"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Layout -->
+    <main class="main-layout">
+      
+      <!-- 1. Chat Section -->
+      <section id="chatSection" class="chat-section">
+        
+        <!-- Prompt Chips -->
+        <div class="prompt-chips-container">
+          <button class="chip" data-prompt="What classes do I have today?">
+            Timetable today
+          </button>
+          <button class="chip" data-prompt="Check my live attendance and debar margins for all courses.">
+            Attendance
+          </button>
+          <button class="chip" data-prompt="Show my latest CAT marks.">
+            My marks
+          </button>
+          <button class="chip" data-prompt="What is my current CGPA and credits earned?">
+            CGPA & credits
+          </button>
+          <button class="chip" data-prompt="What is my exam schedule and seat number?">
+            Exam schedule
+          </button>
+          <button class="chip" data-prompt="Who is my assigned proctor?">
+            Proctor
+          </button>
+          <button class="chip" data-prompt="What is my hostel block and room number?">
+            Hostel room
+          </button>
+          <button class="chip" data-prompt="Explain the FFCS relative grading system.">
+            FFCS & grading
+          </button>
+          <button class="chip" data-prompt="whoami">
+            Who am I
+          </button>
+          <button class="chip" data-prompt="logout">
+            Logout
+          </button>
+        </div>
+
+        <!-- Chat Stream -->
+        <div id="chatMessages" class="chat-messages">
+          <div class="message-wrapper assistant">
+            <div class="avatar">
+              <i class="fa-solid fa-microchip"></i>
+            </div>
+            <div class="message-content">
+              <div class="message-sender">VITopia Copilot</div>
+              <div class="message-body">
+                <p>Hi! I'm your VIT academic copilot. To answer anything about <strong>your</strong> records — attendance, timetable, marks, CGPA, exam schedule, proctor, hostel — connect your VTOP account: type <code>login &lt;username&gt; &lt;password&gt;</code>.</p>
+                <p>You can ask general questions (FFCS, grading, campus rules) without logging in.</p>
+              </div>
+              <span class="message-time">Just now</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat Input Form -->
+        <div class="chat-input-area">
+          <form id="chatForm" class="chat-form">
+            <textarea 
+              id="messageInput" 
+              placeholder="Ask a question, or type 'login <username> <password>' to connect VTOP..."
+              rows="1"
+              required
+            ></textarea>
+            <button type="submit" id="sendBtn" class="btn-send">
+              <i class="fa-solid fa-arrow-up"></i>
+            </button>
+          </form>
+          <div class="input-footer">
+            <span>Hosted on Google Cloud Platform (GCP Project: nuveroai) • Powered by Google Vertex AI Gemini 2.5 Flash</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Documentation View (Single Page Built-In Guide) -->
+      <section id="docsSection" class="docs-view">
+        <div class="docs-container">
+          
+          <div class="docs-header">
+            <h1>VITopia AI Copilot — Documentation & User Manual</h1>
+            <p>Comprehensive guide to conversational features, live VTOP synchronization, and Google Cloud deployment.</p>
+          </div>
+
+          <!-- Section 1: In-Chat Authentication -->
+          <div class="docs-section">
+            <h2><i class="fa-solid fa-lock"></i> 1. Conversational Authentication (Zero-Dashboard Setup)</h2>
+            <div class="docs-card">
+              <h3>Direct In-Chat Login</h3>
+              <p>You can sign into any student's VTOP account directly within the chat stream. No external dashboard buttons or browser extensions are required.</p>
+              <div class="code-snippet">login as &lt;username&gt; &lt;password&gt;</div>
+              <p style="margin-top: 8px;"><strong>Live CAPTCHA Flow:</strong> The agent securely fetches a fresh CAPTCHA challenge directly from <code>vtop.vit.ac.in</code> and renders the image in the chat. Reply with the 6-character text to complete authentication.</p>
+            </div>
+
+            <div class="docs-card">
+              <h3>Switching Profiles & Logging Out</h3>
+              <p>Seamlessly toggle between students or clear your active session credentials:</p>
+              <div class="code-snippet">switch to 23BCI0137<br>switch to 23BCE0361<br>logout</div>
+            </div>
+          </div>
+
+          <!-- Section 2: Academic & Campus Intelligence -->
+          <div class="docs-section">
+            <h2><i class="fa-solid fa-graduation-cap"></i> 2. Academic Intelligence & Query Guide</h2>
+            
+            <div class="docs-card">
+              <h3>📅 Weekly Timetable & Venue Navigation</h3>
+              <p>Ask for any specific day's schedule, theory vs lab slots, and room locations:</p>
+              <div class="code-snippet">"What is my timetable schedule for Wednesday?"<br>"Where is my Malware Analysis lab class conducted?"</div>
+            </div>
+
+            <div class="docs-card">
+              <h3>📊 Live Attendance & Debar Watch</h3>
+              <p>Calculates live attendance percentages, classes needed to reach 75%, and checks eligibility for the 9.0+ Pointer Attendance Waiver:</p>
+              <div class="code-snippet">"Check my live attendance and debar status for all registered courses."<br>"How many classes can I miss in Web Application Security?"</div>
+            </div>
+
+            <div class="docs-card">
+              <h3>🏢 Hostel Allotment, Daily Curfew & Mess</h3>
+              <p>Pulls verified records from <code>Services -> My Info -> Profile -> Hostel</code>:</p>
+              <div class="code-snippet">"What is my allotted hostel block, room status, and daily curfew?"<br>"What mess am I enrolled in and what are the meal timings?"</div>
+            </div>
+
+            <div class="docs-card">
+              <h3>🏛️ Institutional Leadership & Faculty Directory</h3>
+              <p>Autonomous institutional hierarchy resolver mapping Deans and HoDs across all 9 VIT Schools:</p>
+              <div class="code-snippet">"Who is my Dean and Head of Department (HoD)?"<br>"Find email and cabin for faculty Dr. Ushus Elizebeth Zachariah"</div>
+            </div>
+
+            <div class="docs-card">
+              <h3>📝 Marks, CAT-2 Seating & Digital Assignments</h3>
+              <p>Real-time continuous assessment scores, hall venues, seat numbers, and assignment deadlines:</p>
+              <div class="code-snippet">"Show my CAT-1 continuous assessment marks and upcoming exam seating."<br>"Do I have any pending digital assignments due soon?"</div>
+            </div>
+          </div>
+
+          <!-- Section 3: Cloud & Multi-Day Persistence Architecture -->
+          <div class="docs-section">
+            <h2><i class="fa-solid fa-cloud"></i> 3. Google Cloud Platform (GCP) Architecture</h2>
+            <div class="docs-card">
+              <h3>Enterprise Cloud Infrastructure</h3>
+              <p>The entire backend and data pipeline runs autonomously on Google Cloud Platform:</p>
+              <ul>
+                <li><strong>LLM Inference:</strong> Google Vertex AI (<code>gemini-2.5-flash</code>) in project <code>nuveroai</code> (<code>us-central1</code>).</li>
+                <li><strong>Container Execution:</strong> Google Cloud Run serverless container with automated horizontal autoscaling.</li>
+                <li><strong>Multi-Day Session Store:</strong> Persistent memory keyed by <code>user_id</code> / phone number for seamless WhatsApp API multi-day persistence.</li>
+                <li><strong>Cloud Storage:</strong> All student profile records and indexed RAG embeddings reside in cloud storage.</li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- Marked.js for Markdown parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>

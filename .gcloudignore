@@ -20,15 +20,19 @@ __pycache__/
 # Ignored by the build system
 /setup.cfg
 
-# Local development files (not needed on App Engine)
+# Local development files (not needed in the container)
 .env
 .env.*
 .DS_Store
-Dockerfile
 docker-compose.yml
 secrets.json
+.claude/
 
-# Test files (not needed on App Engine)
+# Per-user runtime state — must NOT ship (holds credentials + scraped profiles);
+# recreated at runtime.
+data/
+
+# Test files
 Test/
 *.test.py
 *.log

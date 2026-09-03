@@ -1,0 +1,352 @@
+[
+  {
+    "id": "faq-001",
+    "category": "General",
+    "question": "What is VIT and where is its main campus located?",
+    "answer": "Vellore Institute of Technology (VIT) is a top-ranked private deemed-to-be university in India, established in 1984. Its flagship main campus is located in Katpadi, Vellore, Tamil Nadu.",
+    "tags": ["VIT", "Vellore", "Overview", "Location"]
+  },
+  {
+    "id": "faq-002",
+    "category": "General",
+    "question": "How many campuses does VIT have?",
+    "answer": "VIT has four main campuses in India: VIT Vellore (Main), VIT Chennai, VIT-AP (Amaravati), and VIT Bhopal, along with an international campus in Mauritius.",
+    "tags": ["Campuses", "Chennai", "AP", "Bhopal", "Mauritius"]
+  },
+  {
+    "id": "faq-003",
+    "category": "Accreditation",
+    "question": "What is the NAAC grade and NIRF ranking of VIT?",
+    "answer": "VIT Vellore is accredited with the highest NAAC A++ grade (CGPA 3.66/4). In NIRF 2025 rankings, VIT is ranked 14th in University, 16th in Engineering, 14th in Research, and 21st Overall in India.",
+    "tags": ["NAAC", "NIRF", "Ranking", "Accreditation"]
+  },
+  {
+    "id": "faq-004",
+    "category": "Accreditation",
+    "question": "Are VIT engineering programs ABET accredited?",
+    "answer": "Yes, select B.Tech programs at VIT (such as CSE, ECE, Mechanical, Civil, and EEE) have received international ABET (USA) accreditation.",
+    "tags": ["ABET", "Accreditation", "International"]
+  },
+  {
+    "id": "faq-005",
+    "category": "Admissions",
+    "question": "What entrance exam is required for B.Tech admission at VIT?",
+    "answer": "B.Tech admissions at all VIT campuses are based on the VIT Engineering Entrance Examination (VITEEE), a proctored Computer-Based Test (CBT).",
+    "tags": ["VITEEE", "Admissions", "BTech", "CBT"]
+  },
+  {
+    "id": "faq-006",
+    "category": "Admissions",
+    "question": "What is the exam pattern for VITEEE?",
+    "answer": "VITEEE consists of 125 MCQs to be completed in 2 hours and 30 minutes (150 minutes). The breakdown is: Mathematics/Biology (40 questions), Physics (35 questions), Chemistry (35 questions), Aptitude (10 questions), and English (5 questions).",
+    "tags": ["VITEEE", "Exam Pattern", "MCQs", "Duration"]
+  },
+  {
+    "id": "faq-007",
+    "category": "Admissions",
+    "question": "Is there negative marking in VITEEE?",
+    "answer": "Yes, the marking scheme awards +4 marks for every correct answer and deducts 1 mark (-1 mark) for every wrong answer.",
+    "tags": ["VITEEE", "Marking Scheme", "Negative Marking"]
+  },
+  {
+    "id": "faq-008",
+    "category": "Admissions",
+    "question": "What is the minimum eligibility criteria for VITEEE?",
+    "answer": "Candidates must pass 10+2 with a minimum aggregate of 60% in Physics, Chemistry, and Mathematics/Biology (50% aggregate for SC/ST and North-Eastern state candidates).",
+    "tags": ["Eligibility", "12th Marks", "PCM", "PCB"]
+  },
+  {
+    "id": "faq-009",
+    "category": "Admissions",
+    "question": "What is the STARS Scheme at VIT?",
+    "answer": "STARS (Support the Advancement of Rural Students) provides 100% free education, including 100% tuition, hostel, and mess fee waivers, for top-performing rural government school students in each district of Tamil Nadu, Andhra Pradesh, and Telangana.",
+    "tags": ["STARS", "Scholarship", "Rural Toppers", "Free Education"]
+  },
+  {
+    "id": "faq-010",
+    "category": "Fees",
+    "question": "How does the Category system work for VIT tuition fees?",
+    "answer": "VIT assigns tuition fees across 5 scholarship categories (Category 1 to 5) based on VITEEE rank. Category 1 has the lowest fee, while Category 5 has the highest. Once allotted during counseling, the category fee remains fixed for all 4 years.",
+    "tags": ["Category 1", "Category 5", "Tuition Fee", "VITEEE Rank"]
+  },
+  {
+    "id": "faq-011",
+    "category": "Fees",
+    "question": "What is the annual tuition fee for B.Tech CSE (Group B) across categories?",
+    "answer": "For Group B programs (like CSE/ECE), annual tuition fees are: Category 1: ₹1,95,000; Category 2: ₹3,04,000; Category 3: ₹4,02,000; Category 4: ₹4,45,000; Category 5: ₹4,90,000.",
+    "tags": ["CSE Fee", "Group B", "Tuition Fee", "Category Fee"]
+  },
+  {
+    "id": "faq-012",
+    "category": "Fees",
+    "question": "What is the annual tuition fee for Group A programs like Bio-Tech or Civil Engineering?",
+    "answer": "For Group A programs, annual tuition fees are: Category 1: ₹1,73,000; Category 2: ₹2,32,000; Category 3: ₹3,40,000; Category 4: ₹3,65,000; Category 5: ₹3,95,000.",
+    "tags": ["Group A Fee", "Civil Fee", "BioTech Fee"]
+  },
+  {
+    "id": "faq-013",
+    "category": "Fees",
+    "question": "What is the one-time caution deposit for academic admission?",
+    "answer": "A one-time, refundable caution deposit of ₹5,000 is collected at the time of academic admission.",
+    "tags": ["Caution Deposit", "Refundable", "Admission Fee"]
+  },
+  {
+    "id": "faq-014",
+    "category": "Placements",
+    "question": "What is the highest and average package offered at VIT placements?",
+    "answer": "VIT recorded a highest package of ₹1 Crore+ per annum and an overall average package of ~₹9.90 LPA (with CSE/IT branches averaging ~₹14.80 LPA).",
+    "tags": ["Placements", "Highest Package", "Average Package", "CTC"]
+  },
+  {
+    "id": "faq-015",
+    "category": "Placements",
+    "question": "Are placement drives centralized across all VIT campuses?",
+    "answer": "Yes, the Career Development Centre (CDC) conducts centralized placement drives, giving equal placement opportunities to students from Vellore, Chennai, AP, and Bhopal campuses.",
+    "tags": ["CDC", "Centralized Placements", "Campuses"]
+  },
+  {
+    "id": "faq-016",
+    "category": "Placements",
+    "question": "What is a Super Dream offer at VIT?",
+    "answer": "A Super Dream offer refers to a campus placement offer with a CTC of ₹10 LPA or above. VIT secures over 3,300 Super Dream offers per batch.",
+    "tags": ["Super Dream", "CTC", "10 LPA", "Placements"]
+  },
+  {
+    "id": "faq-017",
+    "category": "Placements",
+    "question": "Which top companies recruit from VIT?",
+    "answer": "Top recruiters include Microsoft, Amazon, Google, Adobe, Qualcomm, Intel, Cisco, Morgan Stanley, Goldman Sachs, Deloitte, TCS, Infosys, Wipro, L&T, and Bosch.",
+    "tags": ["Recruiters", "Companies", "Microsoft", "Amazon", "TCS"]
+  },
+  {
+    "id": "faq-018",
+    "category": "Academics",
+    "question": "What is FFCS in VIT?",
+    "answer": "FFCS stands for Fully Flexible Credit System. It allows students to select their own courses, faculty members, class timings, and semester credit load via the VTOP portal.",
+    "tags": ["FFCS", "VTOP", "Flexibility", "Timetable"]
+  },
+  {
+    "id": "faq-019",
+    "category": "Academics",
+    "question": "What is VTOP?",
+    "answer": "VTOP is VIT's online student and parent ERP portal used for FFCS course registration, viewing attendance, checking grades, paying fees, and applying for hostel leave.",
+    "tags": ["VTOP", "ERP Portal", "Student Portal"]
+  },
+  {
+    "id": "faq-020",
+    "category": "Academics",
+    "question": "How does the grading system work at VIT?",
+    "answer": "VIT uses relative grading. Letter grades include S (10 points - Outstanding), A (9), B (8), C (7), D (6), E (5 - Pass), F (0 - Fail), and N (0 - Debarred for < 75% attendance).",
+    "tags": ["Grading", "CGPA", "S Grade", "N Grade", "Relative Grading"]
+  },
+  {
+    "id": "faq-021",
+    "category": "Academics",
+    "question": "What happens if attendance drops below 75%?",
+    "answer": "If attendance drops below 75% in a course without valid proctor-approved exemption, the student is awarded an 'N' (Debarred) grade and cannot appear for the final examination (FAT). The course must be re-registered.",
+    "tags": ["Attendance", "75% Rule", "N Grade", "Debarred"]
+  },
+  {
+    "id": "faq-022",
+    "category": "Hostel",
+    "question": "What room options are available in VIT hostels?",
+    "answer": "VIT hostels offer single (1-bed), 2-bed, 3-bed, 4-bed, and 6-bed rooms in both Air-Conditioned (AC) and Non-AC variants.",
+    "tags": ["Hostel Rooms", "AC", "Non-AC", "Sharing"]
+  },
+  {
+    "id": "faq-023",
+    "category": "Hostel",
+    "question": "What is the annual hostel and mess fee range?",
+    "answer": "Combined annual room and mess fees range between ~₹1.33 Lakh (6-bed Non-AC) to ~₹2.35 Lakh (Single AC room), depending on room type and mess selection.",
+    "tags": ["Hostel Fee", "Mess Fee", "AC Room"]
+  },
+  {
+    "id": "faq-024",
+    "category": "Hostel",
+    "question": "What mess options are available for hostel students?",
+    "answer": "Students can choose from Vegetarian Mess, Non-Vegetarian Mess, or Special / Multi-Cuisine Mess.",
+    "tags": ["Mess Options", "Veg Mess", "Non-Veg Mess", "Special Mess"]
+  },
+  {
+    "id": "faq-025",
+    "category": "Hostel",
+    "question": "What is the night curfew time for hostels?",
+    "answer": "General in-time is 9:00 PM for Men's Hostels and 8:30 PM (weekdays) / 9:00 PM (weekends) for Women's Hostels, with daily biometric attendance registration.",
+    "tags": ["Curfew", "Hostel Timings", "Biometric Attendance"]
+  },
+  {
+    "id": "faq-026",
+    "category": "Campus Life",
+    "question": "What is Riviera?",
+    "answer": "Riviera is VIT Vellore's annual International Cultural and Sports Festival. It features 4 days of concerts by famous artists, dance and music competitions, and attracts 40,000+ students.",
+    "tags": ["Riviera", "Cultural Fest", "Pro-Shows", "Sports"]
+  },
+  {
+    "id": "faq-027",
+    "category": "Campus Life",
+    "question": "What is graVITas?",
+    "answer": "graVITas is VIT's annual International Technical Festival featuring hackathons, robotics (RoboWars), coding challenges, and tech workshops.",
+    "tags": ["graVITas", "Tech Fest", "Hackathon", "Robotics"]
+  },
+  {
+    "id": "faq-028",
+    "category": "Campus Life",
+    "question": "Are there technical clubs and Formula SAE teams at VIT?",
+    "answer": "Yes, VIT hosts IEEE, ACM, GDSC, CodeChef chapters, along with world-famous Formula Student teams like Pravega Racing (combustion) and Ojas (electric).",
+    "tags": ["Clubs", "IEEE", "Pravega Racing", "Formula Student"]
+  },
+  {
+    "id": "faq-029",
+    "category": "Medical",
+    "question": "What medical facilities are available on campus?",
+    "answer": "VIT has a 24/7 Health Centre with doctors, emergency beds, ambulances, and immediate access to Christian Medical College (CMC) Hospital Vellore.",
+    "tags": ["Health Centre", "Medical", "Ambulance", "CMC Vellore"]
+  },
+  {
+    "id": "faq-030",
+    "category": "Contact",
+    "question": "How can I contact VIT Vellore admissions?",
+    "answer": "You can contact the VIT Admissions Office via email at ugadmission@vit.ac.in or visit the official admissions portal at https://viteee.vit.ac.in.",
+    "tags": ["Contact", "Email", "Admissions Office", "Website"]
+  },
+  {
+    "id": "faq-031",
+    "category": "Examinations",
+    "question": "What is the internal exam weightage for CAT-1, CAT-2, and FAT?",
+    "answer": "Theory courses are evaluated as follows: CAT-1 (15% weightage), CAT-2 (15% weightage), Assignments/Quizzes (30% weightage), and FAT (Final Assessment Test - 40% weightage).",
+    "tags": ["CAT1", "CAT2", "FAT", "Exam Weightage"]
+  },
+  {
+    "id": "faq-032",
+    "category": "Examinations",
+    "question": "What is the passing criteria for a theory course at VIT?",
+    "answer": "A student must score at least 40% in FAT (40 out of 100) AND achieve an overall aggregate of 50% across CATs, internal assessments, and FAT.",
+    "tags": ["Passing Marks", "FAT Passing", "50 Percent Rule"]
+  },
+  {
+    "id": "faq-033",
+    "category": "Academics",
+    "question": "What is the 9Pointer Club (9.0+ CGPA privilege) at VIT?",
+    "answer": "Students with a CGPA of 9.00 or above are exempt from the mandatory 75% attendance rule, receive priority FFCS course registration slots, and can register for extra credits.",
+    "tags": ["9 Pointer", "9.0 CGPA", "Attendance Waiver", "FFCS Priority"]
+  },
+  {
+    "id": "faq-034",
+    "category": "Infrastructure",
+    "question": "What is Technology Tower (TT) at VIT Vellore?",
+    "answer": "Technology Tower (TT) is an iconic 7-story central building at VIT Vellore housing SELECT, SENSE, SAS, and SSL schools, VITTBI incubator, and auditoriums like Dr. B.R. Ambedkar Auditorium.",
+    "tags": ["TT", "Technology Tower", "SENSE", "SELECT", "Auditoriums"]
+  },
+  {
+    "id": "faq-035",
+    "category": "Infrastructure",
+    "question": "What is Silver Jubilee Tower (SJT) at VIT Vellore?",
+    "answer": "Silver Jubilee Tower (SJT) is a high-rise academic building housing SCOPE (CSE), SITE, the Academic Office, CDC Placement cell, and modern computing labs.",
+    "tags": ["SJT", "Silver Jubilee Tower", "SCOPE", "CDC", "Computing Labs"]
+  },
+  {
+    "id": "faq-036",
+    "category": "Infrastructure",
+    "question": "What facilities does the Periyar EVR Central Library offer?",
+    "answer": "The Periyar EVR Central Library is a 7-story automated facility with 240,000+ print volumes, 300,000+ e-books, RFID checkouts, IEEE/Scopus access, and 24/7 reading halls during exams.",
+    "tags": ["Library", "Periyar EVR", "e-books", "24/7 Reading"]
+  },
+  {
+    "id": "faq-037",
+    "category": "Infrastructure",
+    "question": "What is the Gazebo at VIT Vellore?",
+    "answer": "The Gazebo is a central outdoor open-air square on campus, widely famous as a primary hangout spot for student discussions, club meetings, and evening socialization.",
+    "tags": ["Gazebo", "Hangout", "Campus Spots"]
+  },
+  {
+    "id": "faq-038",
+    "category": "Research",
+    "question": "What is VITTBI?",
+    "answer": "VITTBI is the VIT Technology Business Incubator funded jointly by DST (Government of India). It provides seed grants (up to ₹25 Lakhs), prototyping labs, and mentoring for student startups.",
+    "tags": ["VITTBI", "Incubator", "DST", "Startups", "Seed Funding"]
+  },
+  {
+    "id": "faq-039",
+    "category": "International",
+    "question": "What is the Semester Abroad Program (SAP) at VIT?",
+    "answer": "SAP allows final-year VIT students to spend a semester taking courses or completing project work at top partner universities in the USA, Europe, UK, and Australia with credit transfer.",
+    "tags": ["SAP", "Semester Abroad", "Credit Transfer", "Foreign Study"]
+  },
+  {
+    "id": "faq-040",
+    "category": "International",
+    "question": "What is the International Transfer Program (ITP 2+2 / 3+1)?",
+    "answer": "ITP allows students to complete 2 years (or 3 years) at VIT and the remaining years at an international partner university (e.g. Purdue, Deakin, Binghamton), graduating with a foreign degree.",
+    "tags": ["ITP", "2+2 Program", "Foreign Degree", "Purdue"]
+  },
+  {
+    "id": "faq-041",
+    "category": "Cutoffs",
+    "question": "What is the estimated VITEEE rank cutoff for CSE Category 1 at VIT Vellore?",
+    "answer": "Category 1 for B.Tech CSE (Core) at VIT Vellore generally closes between VITEEE ranks 500 to 1,500.",
+    "tags": ["VITEEE Cutoff", "CSE Category 1", "Vellore Rank"]
+  },
+  {
+    "id": "faq-042",
+    "category": "Cutoffs",
+    "question": "What is the closing rank range for CSE Category 2 & Category 3 at VIT Vellore?",
+    "answer": "Category 2 for CSE Vellore closes around rank 3,000 – 4,000, while Category 3 closes around rank 19,000 – 20,000.",
+    "tags": ["CSE Category 2", "CSE Category 3", "Cutoff Rank"]
+  },
+  {
+    "id": "faq-043",
+    "category": "Cutoffs",
+    "question": "What rank is needed for B.Tech CSE at VIT Chennai?",
+    "answer": "CSE Category 1 at VIT Chennai typically closes around rank 4,000 – 8,500, while Category 5 extends up to rank 34,000 – 48,000.",
+    "tags": ["VIT Chennai Cutoff", "CSE Chennai", "Category 1"]
+  },
+  {
+    "id": "faq-044",
+    "category": "Transportation",
+    "question": "How far is the nearest railway station from VIT Vellore?",
+    "answer": "Katpadi Junction Railway Station (KPD) is located just 3 km away from the main gate of VIT Vellore, providing frequent trains to Chennai and Bangalore.",
+    "tags": ["Katpadi", "Train", "Transit", "Railway Station"]
+  },
+  {
+    "id": "faq-045",
+    "category": "Transportation",
+    "question": "What are the nearest airports to VIT Vellore?",
+    "answer": "Chennai International Airport (MAA) is ~130 km (~2.5 hours via NH48) and Kempegowda International Airport Bengaluru (BLR) is ~210 km (~3.5 hours) away.",
+    "tags": ["Airport", "Chennai Airport", "Bangalore Airport", "Travel"]
+  },
+  {
+    "id": "faq-046",
+    "category": "Research",
+    "question": "Which major research centers are located at VIT Vellore?",
+    "answer": "Key centers include CNR (Nanotechnology), ARC (Automotive Research), CDMM (Disaster Mitigation), CO2 Research Centre, and CCPS (Cyber-Physical Systems).",
+    "tags": ["Research Centers", "CNR", "ARC", "CDMM", "CO2"]
+  },
+  {
+    "id": "faq-047",
+    "category": "Food",
+    "question": "What commercial food outlets are located inside VIT Vellore campus?",
+    "answer": "On-campus commercial eateries include Domino's Pizza, Subway, Woodys, Kathi Rolls, Baskin Robbins, Nescafe kiosks, and multi-cuisine DC & KC food courts.",
+    "tags": ["Food Outlets", "Dominos", "Subway", "Baskin Robbins", "Food Court"]
+  },
+  {
+    "id": "faq-048",
+    "category": "Hostel",
+    "question": "What is the one-time hostel caution deposit and admission fee?",
+    "answer": "Hostel admission requires a one-time refundable caution deposit of ₹15,000 and a one-time non-refundable hostel admission fee of ₹15,000.",
+    "tags": ["Hostel Caution Deposit", "Hostel Admission Fee"]
+  },
+  {
+    "id": "faq-049",
+    "category": "Academics",
+    "question": "What are N grade and F grade in VIT transcript?",
+    "answer": "An 'F' grade signifies academic failure due to low marks, requiring re-registration. An 'N' grade signifies debarment due to attendance below 75%.",
+    "tags": ["F Grade", "N Grade", "Debarred", "Fail Grade"]
+  },
+  {
+    "id": "faq-050",
+    "category": "Placements",
+    "question": "What companies offer core engineering jobs at VIT?",
+    "answer": "Top core engineering recruiters include L&T, Texas Instruments, Bosch, Mahindra & Mahindra, Tata Motors, Hyundai, Siemens, and Schneider Electric.",
+    "tags": ["Core Jobs", "L&T", "Bosch", "Texas Instruments", "Mechanical"]
+  }
+]

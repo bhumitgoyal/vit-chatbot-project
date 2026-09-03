@@ -219,3 +219,20 @@ rewrite_test.log
 env_variables.yaml
 env_variables2.yaml
 
+# VITopia: per-user runtime state (never commit — contains real student data / credentials)
+data/
+!data/.gitkeep
+real_*.html
+*_session*.json
+*_logged_in.json
+live_vtop_data.json
+live_session_state.json
+maisha_*.json
+explore_sess_id.txt
+
+# Stray VTOP static bundle assets (not used by this project)
+1.js
+Async.js.js
+app.js.js
+vtopheader.js.js
+
