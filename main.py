@@ -596,11 +596,14 @@ def _build_dynamic_context(app_state, user_id: str, msg_low: str,
                 seen.add(p["name"])
                 line = f"- **{p['name']}** — {p.get('designation', '')} · {p.get('school', '')}"
                 if p.get("email"):
-                    line += f"\n  📧 {p['email']}"
-                if p.get("cabin"):
-                    line += f" · 🚪 {p['cabin']}"
+                    line += f"\n  📧 Email: {p['email']}"
+                line += f"\n  🚪 Cabin: {p['cabin']}" if p.get("cabin") else "\n  🚪 Cabin: not on record"
                 cards.append(line)
-            blocks.append("### Faculty (live VTOP directory)\n" + "\n".join(cards[:6]))
+            blocks.append(
+                "### Faculty (live VTOP directory)\n"
+                "_Always state the cabin number together with the email — both come from "
+                "the same VTOP Faculty Info lookup, not just whichever the student named._\n\n"
+                + "\n".join(cards[:6]))
         else:
             fb = []
             for t in terms[:3]:

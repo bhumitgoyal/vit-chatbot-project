@@ -1321,7 +1321,7 @@ class VTOPService:
         return None
 
     # ── live faculty search ────────────────────────────────────────────────
-    def search_faculty_live(self, user_id: str, term: str, detail_limit: int = 3) -> Dict[str, Any]:
+    def search_faculty_live(self, user_id: str, term: str, detail_limit: int = 6) -> Dict[str, Any]:
         """Two-step VTOP faculty directory search (confirmed via a captured XHR
         payload against a live login — the "searchEmployee" input's *name*
         attribute is a red herring, VTOP's JS actually posts it under "empId"):
