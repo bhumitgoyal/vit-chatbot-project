@@ -63,11 +63,29 @@ dashboard instead of processing the search.
 
 | Module | Path | Params | Shape |
 | --- | --- | --- | --- |
-| `project_work` | `academics/common/ProjectView` | `semesterSubId` (select + Submit) | `Course Code │ Course Title │ Status │ View`, e.g. `BCSE497J │ Project - I │ Registered and Approved by Guide`. The page's own "View/Edit" confirm dialog echoed `Course Id: VL_BCSE497J_00100` — this **confirms** the `VL_<CODE>_00100` token format used by `attendance_detail`. |
+| `project_work` | `processProjectStudent` | `semSubId` (not `semesterSubId` — see note below) | `Course Code │ Course Title │ Status │ View`, e.g. `BCSE497J │ Project - I │ Registered and Approved by Guide`. The page's own "View/Edit" confirm dialog echoed `Course Id: VL_BCSE497J_00100` — this **confirms** the `VL_<CODE>_00100` token format used by `attendance_detail`. |
 
 Course/project **View/Edit** links open an edit-confirmation dialog — never
 click "Proceed" there; the chatbot only reads the registration-status table,
 never the edit flow.
+
+**Fixed 2026-09-04 (project_work was hitting a page path, and the wrong param name):**
+`academics/common/ProjectView` (GET-equivalent) is only the *landing* render —
+the semester dropdown + Submit button. Re-posting to that same path (or a
+guessed `doProjectView`) with a rotated `_csrf` — the same trick that fixed
+faculty search — always came back with 0 tables, because it's simply the
+wrong endpoint. Captured the real "Submit" click's network request live: it
+posts to **`processProjectStudent`**, no landing-page warm-up or csrf
+rotation needed — same one-shot pattern as `attendance`/`timetable`.
+
+**Second param-name trap**, distinct from the `empId`/`searchEmployee` one:
+the `<select>` on this page has `id="semesterSubId"` (matching every other
+module), but its `<label for="semSubId">` doesn't match that id — and the
+real POST body key VTOP reads is the label's `semSubId`, not the select's own
+id. Sending `semesterSubId` gets a 200 with the *same empty landing-page HTML
+back* (no error, no table) — confirmed by probing 7 candidate key names live
+against the authenticated endpoint; only `semSubId` returned the real
+registration table.
 
 ## Confirmed but deliberately NOT wired in
 

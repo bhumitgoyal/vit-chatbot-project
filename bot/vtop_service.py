@@ -810,16 +810,27 @@ class VTOPService:
         for cols in _rows_from_html(soup, min_cols=12):
             if not cols[0].isdigit():
                 continue
-            courses.append({
+            faculty_raw = cols[8]
+            entry = {
                 "sl": cols[0],
                 "course": cols[2],
                 "credits": cols[3],
                 "category": cols[4],
                 "class_id": cols[6],
                 "slot_venue": cols[7],
-                "faculty": cols[8],
+                "faculty": faculty_raw,
                 "status": cols[11],
-            })
+            }
+            # Project/capstone rows embed the title + guide's name in the same
+            # cell, e.g. "ACADEMICS - ACAD Project Title: <title> Guide: <name> - <school>".
+            m = re.search(r"Project Title:\s*(.+?)\s*Guide:\s*([A-Za-z .]+?)\s*-\s*([A-Z]+)\s*$",
+                          faculty_raw)
+            if m:
+                entry["faculty"] = "ACADEMICS"
+                entry["project_title"] = m.group(1).strip()
+                entry["guide"] = m.group(2).strip()
+                entry["guide_school"] = m.group(3).strip()
+            courses.append(entry)
         return {"courses": courses} if courses else None
 
     def _scrape_marks(self, live: LiveSession) -> Optional[List[Dict[str, Any]]]:
@@ -1258,23 +1269,33 @@ class VTOPService:
         return self.biometric_for_date(live, time.strftime("%d-%b-%Y"))
 
     def _scrape_project_work(self, live: LiveSession) -> Optional[List[Dict[str, str]]]:
-        # academics/common/ProjectView — capstone / project-course registration
-        # status. Confirmed real (its "view" confirm dialog echoes
-        # "Course Id: VL_<CODE>_00100", the same token attendance_detail derives).
-        for path in ("academics/common/ProjectView", "academics/common/doProjectView"):
-            res = _post(live.http, path, live.register_no, live.csrf, self._sem_body(live))
-            soup = self._guarded(live, res)
-            if not soup:
+        # academics/common/ProjectView is only the landing page (renders the
+        # semester dropdown). The "Submit" button posts to a DIFFERENT
+        # endpoint, processProjectStudent — confirmed live by capturing the
+        # real click's network request. It also does NOT read the standard
+        # `semesterSubId` key every other module uses: this form's <select>
+        # is id="semesterSubId" but its <label for="semSubId"> gives away the
+        # real POST field, confirmed by probing candidates live — the body
+        # key is **`semSubId`**. Sending `semesterSubId` here silently
+        # re-renders the empty landing page instead of erroring.
+        res = _post(live.http, "processProjectStudent", live.register_no,
+                    live.csrf, {"semSubId": live.semester_id} if live.semester_id else {})
+        soup = self._guarded(live, res)
+        if not soup:
+            logger.info(f"Project work rejected: status={res.status_code} "
+                       f"len={len(res.text)}")
+            return None
+        out = []
+        for cols in _rows_from_html(soup, min_cols=3):
+            low0 = cols[0].lower()
+            if low0 in ("course code",) or not self._COURSE_CODE.match(cols[0].strip()):
                 continue
-            out = []
-            for cols in _rows_from_html(soup, min_cols=3):
-                low0 = cols[0].lower()
-                if low0 in ("course code",) or not self._COURSE_CODE.match(cols[0].strip()):
-                    continue
-                out.append({"code": cols[0], "title": cols[1] if len(cols) > 1 else "",
-                           "status": cols[2] if len(cols) > 2 else ""})
-            if out:
-                return out
+            out.append({"code": cols[0], "title": cols[1] if len(cols) > 1 else "",
+                       "status": cols[2] if len(cols) > 2 else ""})
+        if out:
+            return out
+        logger.info(f"Project work returned 0 parsed rows "
+                   f"({len(soup.find_all('table'))} tables in response).")
         return None
 
     def biometric_for_date(self, live: LiveSession, date_ddmonyyyy: str) -> Optional[Dict[str, Any]]:

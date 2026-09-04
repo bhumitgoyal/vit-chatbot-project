@@ -345,15 +345,50 @@ def _build_dynamic_context(app_state, user_id: str, msg_low: str,
         elif r.get("status") == "unavailable":
             blocks.append(_fallback_banner(r.get("vtop_path", "VTOP")) + "_Class messages not retrieved._")
 
-    # Capstone / project course registration
+    # Capstone / project course registration (+ the guide's real email & cabin)
     if any(w in msg_low for w in ("capstone", "project - i", "project-i", "my project",
-                                   "project guide", "project status", "project registration")):
+                                   "project guide", "my guide", "project status",
+                                   "project registration")):
         r = live("project_work")
         if r.get("status") == "ok" and r["data"]:
             blocks.append("### Project / Capstone Registration (live)\n" + "\n".join(
                 f"• **{x['code']}** — {x['title']}: {x['status']}" for x in r["data"][:5]))
         elif r.get("status") == "unavailable":
             blocks.append(_fallback_banner(r.get("vtop_path", "VTOP")) + "_Project status not retrieved._")
+
+        # The guide's name (+ project title) is embedded in the timetable's
+        # Project-course row, not in project_work — pull it from there, then
+        # look the guide up in the live faculty directory for their real
+        # email/cabin (same VTOP page the earlier faculty fix uses).
+        tt = live("timetable")
+        tt_courses = (tt.get("data") or {}).get("courses", []) if tt.get("status") == "ok" else []
+        guide_course = next((c for c in tt_courses if c.get("guide")), None)
+        if guide_course:
+            lines = [f"### Project Guide (live)",
+                    f"- **Project:** {guide_course.get('project_title', guide_course.get('course', ''))}",
+                    f"- **Guide:** {guide_course['guide']} ({guide_course.get('guide_school', '')})"]
+            fr = vtop.search_faculty_live(user_id, guide_course["guide"].split()[0])
+            match = None
+            if fr.get("status") == "ok":
+                guide_last = guide_course["guide"].split()[-1].lower()
+                match = next((p for p in fr["data"]
+                             if guide_last in p["name"].lower()
+                             or guide_course["guide"].split()[0].lower() in p["name"].lower()),
+                            fr["data"][0] if fr["data"] else None)
+            if match:
+                if match.get("email"):
+                    lines.append(f"- **Email:** {match['email']}")
+                lines.append(f"- **Cabin:** {match['cabin']}" if match.get("cabin")
+                             else "- **Cabin:** not on record")
+                if match.get("designation"):
+                    lines.append(f"- **Designation:** {match['designation']}")
+            else:
+                lines.append("- _Couldn't confirm the guide's email/cabin via VTOP's faculty "
+                             "search this time — try `<guide name> email` directly._")
+            blocks.append("\n".join(lines))
+        elif r.get("status") == "ok" and r["data"]:
+            blocks.append("_Registered, but the guide's name wasn't found on the timetable "
+                          "page — check VTOP → Academics → Time Table for the Project row._")
 
     # Minor / Honour / additional learning
     if any(w in msg_low for w in ("minor", "honour", "honor", "additional learning")):
@@ -577,7 +612,9 @@ def _build_dynamic_context(app_state, user_id: str, msg_low: str,
         "faculty", "professor", "prof", "cabin", "intercom", "email", "mail",
         "who", "what", "find", "tell", "show", "give", "the", "for", "his",
         "her", "their", "sir", "maam", "mam", "doctor", "dr", "and", "email",
-        "contact", "number", "office", "room", "does", "teach",
+        "contact", "number", "office", "room", "does", "teach", "guide",
+        "project", "which", "your", "you", "sit", "sits", "set", "seat",
+        "this", "that", "time", "guy",
     }
     if any(w in msg_low for w in ("faculty", "professor", "prof ", "cabin", "intercom",
                                    "email of", "email", "who is", "who teaches",
