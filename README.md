@@ -40,7 +40,8 @@ the live session later expires. Delete that file to disable it for an account.
 blood group, hosteller status, **hostel block/room/bed & mess**), `proctor`,
 `proctor_messages`, `class_messages` (from faculty), `hod_dean`, `receipts`,
 `library_dues`, `fee_intimations`, `assignments`, `additional_learning`
-(minor/honour), `scholarships`, `biometric` (campus punch log); plus
+(minor/honour), `scholarships`, `biometric` (campus punch log),
+`project_work` (capstone/project registration status); plus
 `search_faculty_live` (VTOP HR employee search).
 
 Every module is confirmed against a live login except `assignments` and the

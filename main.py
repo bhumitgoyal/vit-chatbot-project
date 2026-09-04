@@ -343,6 +343,16 @@ def _build_dynamic_context(app_state, user_id: str, msg_low: str,
         elif r.get("status") == "unavailable":
             blocks.append(_fallback_banner(r.get("vtop_path", "VTOP")) + "_Class messages not retrieved._")
 
+    # Capstone / project course registration
+    if any(w in msg_low for w in ("capstone", "project - i", "project-i", "my project",
+                                   "project guide", "project status", "project registration")):
+        r = live("project_work")
+        if r.get("status") == "ok" and r["data"]:
+            blocks.append("### Project / Capstone Registration (live)\n" + "\n".join(
+                f"• **{x['code']}** — {x['title']}: {x['status']}" for x in r["data"][:5]))
+        elif r.get("status") == "unavailable":
+            blocks.append(_fallback_banner(r.get("vtop_path", "VTOP")) + "_Project status not retrieved._")
+
     # Minor / Honour / additional learning
     if any(w in msg_low for w in ("minor", "honour", "honor", "additional learning")):
         r = live("additional_learning")

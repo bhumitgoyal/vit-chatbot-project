@@ -647,6 +647,7 @@ class VTOPService:
         "additional_learning": "Academics → Minor / Honour",
         "scholarships": "Services → My Scholarships",
         "biometric": "Academics → Biometric Info",
+        "project_work": "Academics → Project",
     }
 
     _SCRAPERS = {
@@ -669,6 +670,7 @@ class VTOPService:
         "additional_learning": "_scrape_additional_learning",
         "scholarships": "_scrape_scholarships",
         "biometric": "_scrape_biometric_today",
+        "project_work": "_scrape_project_work",
     }
 
     def _fresh(self, live: LiveSession, module: str) -> Dict[str, Any]:
@@ -1255,6 +1257,26 @@ class VTOPService:
     def _scrape_biometric_today(self, live: LiveSession) -> Optional[Dict[str, Any]]:
         return self.biometric_for_date(live, time.strftime("%d-%b-%Y"))
 
+    def _scrape_project_work(self, live: LiveSession) -> Optional[List[Dict[str, str]]]:
+        # academics/common/ProjectView — capstone / project-course registration
+        # status. Confirmed real (its "view" confirm dialog echoes
+        # "Course Id: VL_<CODE>_00100", the same token attendance_detail derives).
+        for path in ("academics/common/ProjectView", "academics/common/doProjectView"):
+            res = _post(live.http, path, live.register_no, live.csrf, self._sem_body(live))
+            soup = self._guarded(live, res)
+            if not soup:
+                continue
+            out = []
+            for cols in _rows_from_html(soup, min_cols=3):
+                low0 = cols[0].lower()
+                if low0 in ("course code",) or not self._COURSE_CODE.match(cols[0].strip()):
+                    continue
+                out.append({"code": cols[0], "title": cols[1] if len(cols) > 1 else "",
+                           "status": cols[2] if len(cols) > 2 else ""})
+            if out:
+                return out
+        return None
+
     def biometric_for_date(self, live: LiveSession, date_ddmonyyyy: str) -> Optional[Dict[str, Any]]:
         res = _post(live.http, "getStudViewBioList", live.register_no, live.csrf,
                     {"fromDate": date_ddmonyyyy})
@@ -1359,6 +1381,7 @@ class VTOPService:
         "additional_learning": ["academics/additionalLearning/AdditionalLearningStudentView"],
         "scholarships": ["admissions/getStudentScholarshipDetails"],
         "biometric": ["getStudViewBioList"],
+        "project_work": ["academics/common/ProjectView", "academics/common/doProjectView"],
         "attendance_detail": ["processViewAttendanceDetail"],
     }
 

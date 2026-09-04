@@ -48,16 +48,31 @@ instance with a connected session re-dumps these if VTOP changes.
 | `additional_learning` | `academics/additionalLearning/AdditionalLearningStudentView` | — | Minor / Honour registrations. |
 | `scholarships` | `admissions/getStudentScholarshipDetails` | — | `Sl │ Scholarship Name │ Source │ Address │ Received Date │ File`. |
 
+## Added 2026-09-04 (third menu crawl)
+
+| Module | Path | Params | Shape |
+| --- | --- | --- | --- |
+| `project_work` | `academics/common/ProjectView` | `semesterSubId` (select + Submit) | `Course Code │ Course Title │ Status │ View`, e.g. `BCSE497J │ Project - I │ Registered and Approved by Guide`. The page's own "View/Edit" confirm dialog echoed `Course Id: VL_BCSE497J_00100` — this **confirms** the `VL_<CODE>_00100` token format used by `attendance_detail`. |
+
+Course/project **View/Edit** links open an edit-confirmation dialog — never
+click "Proceed" there; the chatbot only reads the registration-status table,
+never the edit flow.
+
 ## Confirmed but deliberately NOT wired in
 
 - `studentBankInformation/BankInfoStudent` — shows the student's **bank account number** in plain text. Too sensitive for a chatbot.
 - `proctor/viewStudentCredentials` — the student's own login credentials. Never surface.
 - `finance/Payments` — attempted/failed online transactions; `receipts` already covers completed payments.
-- `academics/common/CalendarPreview` — needs `semesterSubId` + `classGroupId`; low value.
+- `academics/common/CalendarPreview` — renders a month-tab calendar widget (not a table); needs `semesterSubId` + `classGroupId`. Institutional, not personal — low value for the parsing effort.
+- `admissions/SpecialAchieversAwards` — this is a **submission form** for claiming an achievement (event category/theme/type selects), not a read view of existing ones.
+- `examinations/malpracticePunishmentDetails` — the general Code-of-Conduct penalty table (institutional policy), not the student's own disciplinary record. Candidate for the RAG knowledge base instead of a live module.
+- `admissions/costCentreCircularsViewPageController` — static list of old circular PDFs (2019–2021), not personal, not current.
+- `academics/common/ExtraCurricular`, `examinations/arrearRegistration/LoadRegularArrearViewPage` — endpoints exist but returned empty for the test account (no EC records / no backlogs); response shape unconfirmed. Re-probe with an account that has data before wiring in.
+- `academics/common/QCMStudentLogin` — course-feedback survey form, not informational.
 
 ## Best-effort / unconfirmed
 
 - `assignments` → `examinations/StudentDA` — landing page; may need a follow-up POST.
 - `hrms/employeeSearchForStudent` faculty search — parser not re-verified.
 - `attendance_detail` — endpoint confirmed; the `registerNumber` token format
-  (`VL_<CODE>_00100`) is derived, not read from the attendance table.
+  (`VL_<CODE>_00100`) is now cross-confirmed via `project_work`'s confirm dialog.
