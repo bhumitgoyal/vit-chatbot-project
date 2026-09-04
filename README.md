@@ -39,14 +39,21 @@ the live session later expires. Delete that file to disable it for an account.
 `exam_schedule` (dates, venue, seat), `curriculum`, `profile` (name, DOB, gender,
 blood group, hosteller status, **hostel block/room/bed & mess**), `proctor`,
 `proctor_messages`, `class_messages` (from faculty), `hod_dean`, `receipts`,
-`library_dues`, `fee_intimations`, `assignments`, `additional_learning`
-(minor/honour), `scholarships`, `biometric` (campus punch log),
-`project_work` (capstone/project registration status); plus
-`search_faculty_live` — VTOP's real two-step "Faculty Info" search (name/designation
-list → email/cabin/department detail). Just naming a faculty member
-("meenakshi email", "who is professor X") is enough, not only "faculty ...".
+`library_dues`, `fee_intimations`, `assignments` (**pending** Digital
+Assignments with due dates — VTOP's own "Forthcoming Digital Assignments"
+dashboard widget; it does not expose a separate submitted-DA list, and the
+bot says so rather than guessing), `additional_learning` (minor/honour),
+`scholarships`, `biometric` (campus punch log), `project_work`
+(capstone/project registration status + the resolved guide's real
+email/cabin from the live faculty directory); plus `search_faculty_live` —
+VTOP's real two-step "Faculty Info" search (name/designation list →
+email/cabin/department detail). Just naming a faculty member ("meenakshi
+email", "who is professor X") is enough, not only "faculty ...". Asking
+"who teaches my courses" / "my teachers' email and cabin" resolves **every**
+enrolled subject's faculty (from the timetable) through that same directory
+in one shot.
 
-Every module is confirmed against a live login except `assignments` —
+Every module is confirmed against a live login —
 see [`docs/VTOP_ENDPOINTS.md`](docs/VTOP_ENDPOINTS.md). Each
 scrape returns `{"status": "unavailable", "vtop_path": …}` on failure; the chat
 then shows a labelled "unverified — check VTOP" fallback rather than guessing.

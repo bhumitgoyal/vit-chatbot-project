@@ -635,7 +635,7 @@ class VTOPService:
         "exam_schedule": "Examinations → Exam Schedule",
         "courses": "Academics → Course Page",
         "curriculum": "Academics → My Curriculum",
-        "assignments": "Examinations → Digital Assignment Upload",
+        "assignments": "Dashboard → Forthcoming Digital Assignments",
         "profile": "Services → Profile",
         "proctor": "Services → Proctor Details",
         "proctor_messages": "Services → Proctor Message",
@@ -1014,29 +1014,36 @@ class VTOPService:
             return {"total_credits": total, "baskets": baskets}
         return None
 
-    def _scrape_assignments(self, live: LiveSession) -> Optional[List[List[str]]]:
-        # examinations/StudentDA — structure unconfirmed, so parse defensively:
-        # keep only rows that carry a course code, and cap the width.
-        try:
-            live.http.get(f"{VTOP_BASE_URL}/examinations/StudentDA", timeout=10)
-        except Exception:
-            pass
-        for path in self.DEBUG_ENDPOINTS["assignments"]:
-            for body in (self._sem_body(live), {}):
-                res = _post(live.http, path, live.register_no, live.csrf, body)
-                soup = self._guarded(live, res)
-                if not soup:
-                    continue
-                out = []
-                for cols in _rows_from_html(soup, min_cols=3):
-                    low0 = cols[0].lower()
-                    if low0 in ("s.no", "sl.no", "course code", "course", "class number"):
-                        continue
-                    if any(self._COURSE_CODE.match((c or "").strip()) for c in cols[:3]):
-                        out.append([c[:60] for c in cols[:6]])
-                if out:
-                    return out
-        return None
+    def _scrape_assignments(self, live: LiveSession) -> Optional[List[Dict[str, str]]]:
+        # The full-page `examinations/StudentDA` view is gone from current VTOP
+        # (confirmed 404 on a live click — the sidebar menu still links there,
+        # but the server route no longer exists). The dashboard's own
+        # "Forthcoming Digital Assignments" widget is the live replacement:
+        # get/upcoming/digital/assignments, a no-params dashboard-widget POST
+        # (same family as get/dashboard/current/cgpa/credits) confirmed by
+        # capturing the real dashboard's network request. VTOP's own HTML for
+        # a still-pending row is malformed (the empty "Uploaded" <td> is
+        # dropped, not left blank), so parse defensively by column count
+        # rather than assuming all 5 columns are always present.
+        res = _post(live.http, "get/upcoming/digital/assignments", live.register_no, live.csrf)
+        soup = self._guarded(live, res)
+        if not soup:
+            return None
+        out = []
+        for cols in _rows_from_html(soup, min_cols=4):
+            low0 = cols[0].lower()
+            if low0 in ("#", "s.no", "sl.no"):
+                continue
+            out.append({
+                "course": cols[1] if len(cols) > 1 else "",
+                "title": cols[2] if len(cols) > 2 else "",
+                "last_date": cols[3] if len(cols) > 3 else "",
+                "uploaded": cols[4] if len(cols) > 4 else "",
+            })
+        # A successful fetch with zero rows means "no forthcoming DAs right
+        # now", not a failure — return [] (falls through to a "none pending"
+        # message) rather than None (which would show the unavailable banner).
+        return out
 
     def _scrape_profile(self, live: LiveSession) -> Optional[Dict[str, Any]]:
         # studentsRecord/StudentProfileAllView — several key/value tables covering
@@ -1460,8 +1467,7 @@ class VTOPService:
                     "academics/common/CoursePageConsolidated"],
         "curriculum": ["academics/common/curriculumCategoryView", "academics/common/Curriculum",
                        "processViewCurriculum"],
-        "assignments": ["examinations/StudentDA", "examinations/doDigitalAssignment",
-                        "examinations/processDigitalAssignmentUpload"],
+        "assignments": ["get/upcoming/digital/assignments"],
         "profile": ["studentsRecord/StudentProfileAllView"],
         "proctor": ["proctor/viewProctorDetails"],
         "proctor_messages": ["proctor/viewMessagesSendByProctor"],

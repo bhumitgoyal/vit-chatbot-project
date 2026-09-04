@@ -101,9 +101,27 @@ registration table.
 
 ## Best-effort / unconfirmed
 
-- `assignments` → `examinations/StudentDA` — landing page; may need a follow-up POST.
 - `attendance_detail` — endpoint confirmed; the `registerNumber` token format
   (`VL_<CODE>_00100`) is now cross-confirmed via `project_work`'s confirm dialog.
+
+## Fixed 2026-09-04 (assignments — the full DA page is gone from current VTOP)
+
+The sidebar's "Digital Assignment Upload" link still points at
+`examinations/StudentDA`, but that route now 404s on a live click — VTOP has
+retired the full per-course DA view without updating the menu. The **live
+replacement** is the dashboard's own "Forthcoming Digital Assignments"
+widget: `POST get/upcoming/digital/assignments` (no `semesterSubId`, same
+no-params-beyond-the-standard-three family as the other `get/dashboard/…`
+dashboard widgets). Confirmed by capturing the dashboard's own real network
+request. Response: `# │ Course Name │ Title │ Last Date │ Uploaded`.
+
+This only ever lists **pending** assignments (a submitted one drops off the
+list) — VTOP does not expose a separate "submitted DAs" view anywhere we've
+found, so the bot says so honestly rather than fabricating one. Note VTOP's
+own HTML for a still-pending row is malformed — the empty `Uploaded <td>` is
+dropped entirely rather than left blank — so the parser reads column count
+defensively (4 cols = pending, 5 = has an uploaded value) instead of assuming
+a fixed shape.
 
 ## Fixed 2026-09-04 (faculty search was hitting the wrong path/params)
 

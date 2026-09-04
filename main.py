@@ -242,6 +242,34 @@ def _fallback_banner(vtop_path: str) -> str:
             f"**unverified reference data** — confirm on VTOP → *{vtop_path}*.\n\n")
 
 
+def _resolve_faculty(vtop: "VTOPService", user_id: str, full_name: str) -> Optional[Dict[str, str]]:
+    """Look a timetable/guide faculty name up in VTOP's live directory and pick
+    the right person out of same-first-name collisions (e.g. multiple
+    "Meenakshi"s) by preferring the candidate whose name matches every token
+    of `full_name`, not just a loose single-token substring."""
+    tokens = [t.lower() for t in full_name.split() if t]
+    if not tokens:
+        return None
+    # A full-name search narrows VTOP's own result set the most; only fall
+    # back to a bare first-name search if that comes back empty.
+    for term in (full_name, tokens[0]):
+        fr = vtop.search_faculty_live(user_id, term)
+        if fr.get("status") != "ok" or not fr["data"]:
+            continue
+        candidates = fr["data"]
+        all_tokens = next((p for p in candidates
+                           if all(tok in p["name"].lower() for tok in tokens)), None)
+        if all_tokens:
+            return all_tokens
+        last_first = next((p for p in candidates
+                           if tokens[-1] in p["name"].lower() and tokens[0] in p["name"].lower()),
+                          None)
+        if last_first:
+            return last_first
+        return candidates[0]
+    return None
+
+
 def _build_dynamic_context(app_state, user_id: str, msg_low: str,
                            profile: Optional[Dict[str, Any]]) -> str:
     vtop: VTOPService = app_state.vtop
@@ -367,14 +395,7 @@ def _build_dynamic_context(app_state, user_id: str, msg_low: str,
             lines = [f"### Project Guide (live)",
                     f"- **Project:** {guide_course.get('project_title', guide_course.get('course', ''))}",
                     f"- **Guide:** {guide_course['guide']} ({guide_course.get('guide_school', '')})"]
-            fr = vtop.search_faculty_live(user_id, guide_course["guide"].split()[0])
-            match = None
-            if fr.get("status") == "ok":
-                guide_last = guide_course["guide"].split()[-1].lower()
-                match = next((p for p in fr["data"]
-                             if guide_last in p["name"].lower()
-                             or guide_course["guide"].split()[0].lower() in p["name"].lower()),
-                            fr["data"][0] if fr["data"] else None)
+            match = _resolve_faculty(vtop, user_id, guide_course["guide"])
             if match:
                 if match.get("email"):
                     lines.append(f"- **Email:** {match['email']}")
@@ -592,18 +613,77 @@ def _build_dynamic_context(app_state, user_id: str, msg_low: str,
                 blocks.append("### Fee Intimation Letters (live)\n" + "\n".join(
                     f"• {x['description']} — Year {x['year']}, Term {x['term']}" for x in fi["data"][:10]))
 
-    # Digital assignments
+    # Digital assignments — VTOP's own full "Digital Assignment Upload" page is
+    # gone (404 on a live click); the dashboard's "Forthcoming Digital
+    # Assignments" widget is the current live source, so it only ever shows
+    # PENDING ones with a due date, never a separate submitted/completed list —
+    # said plainly below rather than implying a "submitted" list exists.
     if any(w in msg_low for w in ("assig", "da-1", "da 1", "da1", "da-2", "da 2",
-                                  "digital assignment", "submission", "due date")):
+                                  "digital assignment", "submission", "due date",
+                                  "pending assignment", "submitted assignment")):
         r = live("assignments")
-        if r.get("status") == "ok" and r["data"]:
-            rows = "\n".join("| " + " | ".join(x) + " |" for x in r["data"][:20])
-            blocks.append("### Digital Assignments (live from VTOP)\n" + rows)
+        if r.get("status") == "ok":
+            if r["data"]:
+                rows = "\n".join(
+                    f"| {a['course']} | {a['title']} | {a['last_date']} | "
+                    f"{a['uploaded'] or 'Not uploaded yet'} |" for a in r["data"][:20])
+                blocks.append(
+                    "### Pending Digital Assignments (live from your VTOP dashboard)\n"
+                    "_This is VTOP's own \"Forthcoming Digital Assignments\" list — it only "
+                    "shows assignments still pending with a due date. VTOP does not expose a "
+                    "separate list of already-submitted DAs here; a submitted one simply drops "
+                    "off this list._\n\n"
+                    "| Course | Title | Last Date | Uploaded |\n| :-- | :-- | :-: | :-: |\n" + rows)
+            else:
+                blocks.append("_No forthcoming Digital Assignments on your VTOP dashboard right "
+                              "now — nothing pending._")
         else:
-            blocks.append(
-                "_I couldn't pull your Digital Assignments from VTOP this time. See "
-                "**VTOP → Examinations → Digital Assignment Upload** for the DA list, "
-                "max marks and due dates. I don't keep a copy, so I won't guess._")
+            blocks.append(_fallback_banner(r.get("vtop_path", "Dashboard")) +
+                          "_Couldn't pull pending Digital Assignments this time. Check your "
+                          "VTOP dashboard's \"Forthcoming Digital Assignments\" panel directly._")
+
+    # Course faculty directory — every enrolled subject's teacher + email + cabin,
+    # in one shot (distinct from the single-name lookup below). Reuses the
+    # timetable's per-course "faculty" field + the project row's "guide" field,
+    # then resolves each unique name through the live Faculty Info search.
+    if any(w in msg_low for w in (
+            "who teaches my", "my teachers", "my professors", "course faculty",
+            "subject faculty", "teachers email", "teachers cabin", "professors email",
+            "professors cabin", "faculty email and cabin", "all my faculty",
+            "teacher of my", "faculty of my enrolled", "faculty of my subjects",
+            "faculty of my courses", "contact of my teachers", "cabin of my teachers",
+            "my subject teachers", "my course teachers", "enrolled subjects faculty",
+            "enrolled courses faculty", "email and cabin of my teachers",
+            "email and cabin of my professors", "email and cabin of my faculty")):
+        tt = live("timetable")
+        tt_courses = (tt.get("data") or {}).get("courses", []) if tt.get("status") == "ok" else []
+        if tt_courses:
+            lines = ["### Your Course Faculty — email & cabin (live)"]
+            resolved: Dict[str, Optional[Dict[str, str]]] = {}
+            for c in tt_courses:
+                fac_raw = (c.get("faculty") or "").strip()
+                if not fac_raw or fac_raw == "ACADEMICS":
+                    fac_raw = c.get("guide", "")
+                if not fac_raw:
+                    continue
+                fac_name = fac_raw.split(" - ")[0].strip()
+                if not fac_name:
+                    continue
+                if fac_name not in resolved:
+                    resolved[fac_name] = _resolve_faculty(vtop, user_id, fac_name)
+                match = resolved[fac_name]
+                course_label = c.get("course") or c.get("project_title") or ""
+                entry = f"- **{course_label}**\n  Faculty: {fac_name}"
+                if match:
+                    entry += f"\n  📧 {match.get('email') or 'not on record'}"
+                    entry += f"\n  🚪 Cabin: {match.get('cabin') or 'not on record'}"
+                else:
+                    entry += "\n  _Email/cabin not confirmed via VTOP faculty search this time._"
+                lines.append(entry)
+            blocks.append("\n".join(lines))
+        elif tt.get("status") == "unavailable":
+            blocks.append(_fallback_banner(tt.get("vtop_path", "Academics → Time Table")) +
+                          "_Course list not retrieved._")
 
     # Faculty lookup (live VTOP "Faculty Info" search → unverified directory fallback)
     # Triggers on explicit keywords AND on bare "who is <Name>" / "<Name>'s email"
