@@ -1321,35 +1321,69 @@ class VTOPService:
         return None
 
     # ── live faculty search ────────────────────────────────────────────────
-    def search_faculty_live(self, user_id: str, term: str) -> Dict[str, Any]:
+    def search_faculty_live(self, user_id: str, term: str, detail_limit: int = 3) -> Dict[str, Any]:
+        """Two-step VTOP faculty directory search (confirmed via live menu crawl):
+          1. POST hrms/EmployeeSearchForStudent {searchEmployee: term (>=3 chars)}
+             -> table: Name | Designation | School/Centre | Action(button id=empId)
+          2. POST hrms/EmployeeSearch1ForStudent {empId} for each match
+             -> KV: Name, Designation, Department, School/Centre, E-Mail Id, Cabin Number
+        Only the first `detail_limit` matches get the (slower) detail call; the
+        rest come back with just name/designation/school.
+        """
         live = self.ensure_live_session(user_id)
         if not live:
             return {"status": "needs_login"}
         term = term.strip()
         if len(term) < 3:
             return {"status": "unavailable", "vtop_path": "Employee search needs 3+ characters"}
-        for path in ("hrms/employeeSearchForStudent",
-                     "hrms/doEmployeeSearchForStudent"):
+
+        matches: List[Dict[str, str]] = []
+        for path in ("hrms/EmployeeSearchForStudent", "hrms/employeeSearchForStudent"):
             try:
                 res = _post(live.http, path, live.register_no, live.csrf,
-                            {"searchName": term, "empName": term})
+                            {"searchEmployee": term})
             except Exception:
                 continue
             soup = self._guarded(live, res)
             if not soup:
                 continue
-            people = []
-            for cols in _rows_from_html(soup, min_cols=2):
-                if cols[0].lower() in ("s.no", "sl.no", "name"):
-                    continue
-                people.append({
-                    "name": cols[0],
-                    "school": cols[1] if len(cols) > 1 else "",
-                    "email": next((c for c in cols if "@" in c), ""),
-                })
-            if people:
-                return {"status": "ok", "data": people}
-        return {"status": "unavailable", "vtop_path": self._MODULE_PATHS.get("profile", "VTOP")}
+            for table in soup.find_all("table"):
+                for tr in table.find_all("tr"):
+                    tds = tr.find_all("td")
+                    if len(tds) < 4:
+                        continue
+                    btn = tds[3].find(id=True)
+                    emp_id = btn.get("id", "").strip() if btn else ""
+                    if not emp_id or not emp_id.isdigit():
+                        continue
+                    matches.append({
+                        "emp_id": emp_id,
+                        "name": tds[0].get_text(" ", strip=True),
+                        "designation": tds[1].get_text(" ", strip=True),
+                        "school": tds[2].get_text(" ", strip=True),
+                        "email": "", "department": "", "cabin": "",
+                    })
+            if matches:
+                break
+        if not matches:
+            return {"status": "unavailable", "vtop_path": self._MODULE_PATHS.get("profile", "VTOP")}
+
+        for person in matches[:detail_limit]:
+            try:
+                res = _post(live.http, "hrms/EmployeeSearch1ForStudent", live.register_no,
+                            live.csrf, {"empId": person["emp_id"]})
+            except Exception:
+                continue
+            soup = self._guarded(live, res)
+            if not soup:
+                continue
+            detail = self._kv(soup, {"e-mail id": "email", "cabin number": "cabin",
+                                     "name of department": "department",
+                                     "school / centre name": "school",
+                                     "designation": "designation"})
+            person.update({k: v for k, v in detail.items() if v})
+
+        return {"status": "ok", "data": matches}
 
     # ── diagnostics ────────────────────────────────────────────────────────
     DEBUG_ENDPOINTS = {

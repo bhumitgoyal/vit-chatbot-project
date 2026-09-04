@@ -33,7 +33,8 @@ instance with a connected session re-dumps these if VTOP changes.
 | `proctor_messages` | `proctor/viewMessagesSendByProctor` | — | usually empty → "no messages" |
 | `hod_dean` | `hrms/viewHodDeanDetails` | — | KV: dean/HoD name, email, cabin (parser is best-effort; falls back to `bot/school_directory.py`) |
 | `receipts` | `finance/getStudentReceipts` | — | `Invoice Number │ Receipt Number │ Date │ Amount │ Campus Code │ View` |
-| faculty search | `hrms/employeeSearchForStudent` | `searchName` | not re-verified this pass |
+| faculty search (list) | `hrms/EmployeeSearchForStudent` (capital E) | `searchEmployee` (≥3 chars) | `Name of the Faculty │ Designation │ School / Centre │ Action` — the Action `<button id="…">` carries the numeric `empId` |
+| faculty search (detail) | `hrms/EmployeeSearch1ForStudent` | `empId` (from the list step) | KV: `Name of the Faculty, Designation, Name of Department, School / Centre Name, E-Mail Id, Cabin Number` + an "Open Hours" day/time table |
 | semester list | `academics/common/StudentTimeTable` | — | `<select id="semesterSubId">`; current = `VL20262701` |
 
 ## Added 2026-09-03 (second menu crawl)
@@ -73,6 +74,18 @@ never the edit flow.
 ## Best-effort / unconfirmed
 
 - `assignments` → `examinations/StudentDA` — landing page; may need a follow-up POST.
-- `hrms/employeeSearchForStudent` faculty search — parser not re-verified.
 - `attendance_detail` — endpoint confirmed; the `registerNumber` token format
   (`VL_<CODE>_00100`) is now cross-confirmed via `project_work`'s confirm dialog.
+
+## Fixed 2026-09-04 (faculty search was hitting the wrong path/params)
+
+The original faculty-search scraper POSTed to the lowercase
+`hrms/employeeSearchForStudent` (that's only the GET *landing page* path) with
+`searchName`/`empName` params that VTOP never reads, so it silently always
+fell back to the unverified static directory. A live search verified the real
+two-step flow (`EmployeeSearchForStudent` list → `EmployeeSearch1ForStudent`
+detail, see table above) and `search_faculty_live` now uses it — confirmed
+real email `spmeenakshi@vit.ac.in` for MEENAKSHI S P (the static fallback had
+guessed `meenakshi.sp@vit.ac.in`, wrong). The chat now also triggers a lookup
+on a bare `"<Name> email"` / `"who is professor <Name>"`, not only when the
+word "faculty" appears.

@@ -78,6 +78,8 @@ PERSONAL_STRONG = {
     "blood group", "date of birth",
     "biometric", "scholarship", "library due", "minor/honour",
     "class message", "message from faculty", "messages from faculty", "faculty message",
+    "who is", "who teaches", "email of", "cabin of", "contact of", "'s email",
+    "'s cabin", "'s office", "email", "e-mail", "mail id",
 }
 
 # Personal only when the message also carries a possessive ("my", "i", …).
@@ -568,20 +570,37 @@ def _build_dynamic_context(app_state, user_id: str, msg_low: str,
                 "**VTOP → Examinations → Digital Assignment Upload** for the DA list, "
                 "max marks and due dates. I don't keep a copy, so I won't guess._")
 
-    # Faculty lookup (live hrms search → unverified directory fallback)
-    if any(w in msg_low for w in ("faculty", "professor", "prof ", "cabin", "intercom", "email of")):
-        terms = [t for t in re.findall(r"[A-Za-z]{3,}", msg_low)
-                 if t not in ("faculty", "professor", "prof", "cabin", "intercom", "email",
-                              "who", "what", "find", "tell", "show", "give", "the", "for")]
+    # Faculty lookup (live VTOP "Faculty Info" search → unverified directory fallback)
+    # Triggers on explicit keywords AND on bare "who is <Name>" / "<Name>'s email"
+    # style questions, so just naming a faculty member is enough.
+    FACULTY_STOPWORDS = {
+        "faculty", "professor", "prof", "cabin", "intercom", "email", "mail",
+        "who", "what", "find", "tell", "show", "give", "the", "for", "his",
+        "her", "their", "sir", "maam", "mam", "doctor", "dr", "and", "email",
+        "contact", "number", "office", "room", "does", "teach",
+    }
+    if any(w in msg_low for w in ("faculty", "professor", "prof ", "cabin", "intercom",
+                                   "email of", "email", "who is", "who teaches",
+                                   " sir'", " sir ", " mam'", " maam", "contact of")):
+        terms = [t for t in re.findall(r"[A-Za-z]{3,}", msg_low) if t not in FACULTY_STOPWORDS]
         found = []
         for t in terms[:3]:
             fr = vtop.search_faculty_live(user_id, t)
             if fr.get("status") == "ok":
-                found.extend(fr["data"][:3])
+                found.extend(fr["data"])
         if found:
-            blocks.append("### Faculty (live VTOP directory)\n" + "\n".join(
-                f"- **{p['name']}** — {p['school']} {('· ' + p['email']) if p['email'] else ''}"
-                for p in found[:5]))
+            seen, cards = set(), []
+            for p in found:
+                if p["name"] in seen:
+                    continue
+                seen.add(p["name"])
+                line = f"- **{p['name']}** — {p.get('designation', '')} · {p.get('school', '')}"
+                if p.get("email"):
+                    line += f"\n  📧 {p['email']}"
+                if p.get("cabin"):
+                    line += f" · 🚪 {p['cabin']}"
+                cards.append(line)
+            blocks.append("### Faculty (live VTOP directory)\n" + "\n".join(cards[:6]))
         else:
             fb = []
             for t in terms[:3]:
@@ -594,7 +613,8 @@ def _build_dynamic_context(app_state, user_id: str, msg_low: str,
                         continue
                     seen.add(f["name"])
                     cards.append(app_state.faculty.format_faculty_card(f))
-                blocks.append(_fallback_banner("Proctor / HR employee search") + "\n".join(cards[:3]))
+                if cards:
+                    blocks.append(_fallback_banner("Academics → Faculty Info") + "\n".join(cards[:3]))
 
     return "\n\n".join(b for b in blocks if b)
 

@@ -42,10 +42,12 @@ blood group, hosteller status, **hostel block/room/bed & mess**), `proctor`,
 `library_dues`, `fee_intimations`, `assignments`, `additional_learning`
 (minor/honour), `scholarships`, `biometric` (campus punch log),
 `project_work` (capstone/project registration status); plus
-`search_faculty_live` (VTOP HR employee search).
+`search_faculty_live` — VTOP's real two-step "Faculty Info" search (name/designation
+list → email/cabin/department detail). Just naming a faculty member
+("meenakshi email", "who is professor X") is enough, not only "faculty ...".
 
-Every module is confirmed against a live login except `assignments` and the
-faculty search — see [`docs/VTOP_ENDPOINTS.md`](docs/VTOP_ENDPOINTS.md). Each
+Every module is confirmed against a live login except `assignments` —
+see [`docs/VTOP_ENDPOINTS.md`](docs/VTOP_ENDPOINTS.md). Each
 scrape returns `{"status": "unavailable", "vtop_path": …}` on failure; the chat
 then shows a labelled "unverified — check VTOP" fallback rather than guessing.
 Results are cached per module for 5 minutes per session, and a session's own
