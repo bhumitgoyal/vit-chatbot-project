@@ -33,8 +33,18 @@ instance with a connected session re-dumps these if VTOP changes.
 | `proctor_messages` | `proctor/viewMessagesSendByProctor` | — | usually empty → "no messages" |
 | `hod_dean` | `hrms/viewHodDeanDetails` | — | KV: dean/HoD name, email, cabin (parser is best-effort; falls back to `bot/school_directory.py`) |
 | `receipts` | `finance/getStudentReceipts` | — | `Invoice Number │ Receipt Number │ Date │ Amount │ Campus Code │ View` |
-| faculty search (list) | `hrms/EmployeeSearchForStudent` (capital E) | `searchEmployee` (≥3 chars) | `Name of the Faculty │ Designation │ School / Centre │ Action` — the Action `<button id="…">` carries the numeric `empId` |
-| faculty search (detail) | `hrms/EmployeeSearch1ForStudent` | `empId` (from the list step) | KV: `Name of the Faculty, Designation, Name of Department, School / Centre Name, E-Mail Id, Cabin Number` + an "Open Hours" day/time table |
+| faculty search (list) | `hrms/EmployeeSearchForStudent` (capital E) | `empId` = the search text (≥3 chars) — **not** `searchEmployee`, see note below | `Name of the Faculty │ Designation │ School / Centre │ Action` — the Action `<button id="…">` carries the numeric `empId` |
+| faculty search (detail) | `hrms/EmployeeSearch1ForStudent` | `empId` = the numeric id from the list step | KV: `Name of the Faculty, Designation, Name of Department, School / Centre Name, E-Mail Id, Cabin Number` + an "Open Hours" day/time table |
+
+**Param-name trap:** the visible input is `<input name="searchEmployee">`, but
+VTOP's own JS reads its `.val()` and POSTs it under the key **`empId`** — the
+same key the detail step uses for a numeric id. Confirmed by patching
+`XMLHttpRequest.prototype.send`/`fetch` to capture the real outgoing body from
+a live click; sending `searchEmployee` instead gets a
+`"Sorry, Unable to process your request."` error page. The `_csrf` also
+rotates: use the token from the just-rendered landing/search-results page, not
+the one from `/content` at login time, or VTOP quietly re-renders the whole
+dashboard instead of processing the search.
 | semester list | `academics/common/StudentTimeTable` | — | `<select id="semesterSubId">`; current = `VL20262701` |
 
 ## Added 2026-09-03 (second menu crawl)

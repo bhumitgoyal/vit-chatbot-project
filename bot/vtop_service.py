@@ -1322,11 +1322,16 @@ class VTOPService:
 
     # ── live faculty search ────────────────────────────────────────────────
     def search_faculty_live(self, user_id: str, term: str, detail_limit: int = 3) -> Dict[str, Any]:
-        """Two-step VTOP faculty directory search (confirmed via live menu crawl):
-          1. POST hrms/EmployeeSearchForStudent {searchEmployee: term (>=3 chars)}
+        """Two-step VTOP faculty directory search (confirmed via a captured XHR
+        payload against a live login — the "searchEmployee" input's *name*
+        attribute is a red herring, VTOP's JS actually posts it under "empId"):
+          1. POST hrms/EmployeeSearchForStudent {empId: term (>=3 chars), _csrf:
+             the token freshly rotated by rendering the landing page, NOT the
+             session's login-time token}
              -> table: Name | Designation | School/Centre | Action(button id=empId)
-          2. POST hrms/EmployeeSearch1ForStudent {empId} for each match
-             -> KV: Name, Designation, Department, School/Centre, E-Mail Id, Cabin Number
+          2. POST hrms/EmployeeSearch1ForStudent {empId: <numeric id from step 1>}
+             for each match -> KV: Name, Designation, Department, School/Centre,
+             E-Mail Id, Cabin Number
         Only the first `detail_limit` matches get the (slower) detail call; the
         rest come back with just name/designation/school.
         """
@@ -1337,16 +1342,42 @@ class VTOPService:
         if len(term) < 3:
             return {"status": "unavailable", "vtop_path": "Employee search needs 3+ characters"}
 
+        # The landing page must be rendered in this session before the search
+        # POST — and, like the login form, it hands back a freshly-rotated
+        # _csrf token that the search POST must use instead of live.csrf (the
+        # stale session-wide token gets the whole dashboard re-rendered back
+        # instead of results, which is why this silently "failed" before).
+        search_csrf = live.csrf
+        try:
+            warm = _post(live.http, "hrms/employeeSearchForStudent", live.register_no, live.csrf)
+            wsoup = self._guarded(live, warm)
+            if wsoup:
+                tok = wsoup.find("input", {"name": "_csrf"})
+                if tok and tok.get("value"):
+                    search_csrf = tok["value"]
+        except Exception as e:
+            logger.warning(f"Faculty search warm-up failed for {live.register_no}: {e}")
+
         matches: List[Dict[str, str]] = []
         for path in ("hrms/EmployeeSearchForStudent", "hrms/employeeSearchForStudent"):
             try:
-                res = _post(live.http, path, live.register_no, live.csrf,
-                            {"searchEmployee": term})
-            except Exception:
+                # VTOP's own JS reads the "searchEmployee" input's value but posts
+                # it under the key "empId" (confirmed via a captured XHR payload) —
+                # the same param name the detail call reuses for a numeric id.
+                res = _post(live.http, path, live.register_no, search_csrf,
+                            {"empId": term})
+            except Exception as e:
+                logger.warning(f"Faculty search POST {path} failed: {e}")
                 continue
             soup = self._guarded(live, res)
             if not soup:
+                logger.info(f"Faculty search {path} rejected: status={res.status_code} "
+                           f"len={len(res.text)}")
                 continue
+            if not soup.find_all("table"):
+                snippet = re.sub(r"\s+", " ", soup.get_text(" ", strip=True))[:400]
+                logger.info(f"Faculty search {path} status={res.status_code} "
+                           f"len={len(res.text)} no-table body: {snippet!r}")
             for table in soup.find_all("table"):
                 for tr in table.find_all("tr"):
                     tds = tr.find_all("td")
@@ -1364,14 +1395,20 @@ class VTOPService:
                         "email": "", "department": "", "cabin": "",
                     })
             if matches:
+                # Results pages also rotate the token; reuse it for the detail calls.
+                tok = soup.find("input", {"name": "_csrf"})
+                if tok and tok.get("value"):
+                    search_csrf = tok["value"]
                 break
+            logger.info(f"Faculty search {path} returned 0 parsed matches for '{term}' "
+                       f"({len(soup.find_all('table'))} tables in response).")
         if not matches:
             return {"status": "unavailable", "vtop_path": self._MODULE_PATHS.get("profile", "VTOP")}
 
         for person in matches[:detail_limit]:
             try:
                 res = _post(live.http, "hrms/EmployeeSearch1ForStudent", live.register_no,
-                            live.csrf, {"empId": person["emp_id"]})
+                            search_csrf, {"empId": person["emp_id"]})
             except Exception:
                 continue
             soup = self._guarded(live, res)
