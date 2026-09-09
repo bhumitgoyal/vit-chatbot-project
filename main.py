@@ -863,6 +863,11 @@ MESS_MENU_TRIGGERS = (
     "menu today", "menu for today", "menu tomorrow", "what's in the mess",
     "whats in the mess", "mess food", "food in the mess", "what is the mess menu",
 )
+NUTRITION_TRIGGERS = (
+    "nutrition", "nutritional", "calorie", "calories", "kcal", "protein", "macros",
+    "macro", "carb", "carbs", "carbohydrate", "fat ", "fats", "fibre", "fiber",
+    "how healthy", "how much protein",
+)
 _WEEKDAYS = ("monday", "tuesday", "wednesday", "thursday", "friday",
              "saturday", "sunday")
 
@@ -911,15 +916,33 @@ def _mess_menu_reply(vtop: VTOPService, user_id: str, msg_low: str) -> Dict[str,
             f"{messit.HOSTEL_NAMES.get(h, '')} on {target.isoformat()} from MessIT just "
             f"now. Check **messit.vinnovateit.com** directly.")
 
+    want_nutrition = any(t in msg_low for t in NUTRITION_TRIGGERS)
+    nut_raw = app.state.llm.estimate_meal_nutrition(data["meals"]) if want_nutrition else {}
+    nut = {str(k).strip().lower(): v for k, v in nut_raw.items()} if isinstance(nut_raw, dict) else {}
+
     lines = [f"### {data['hostel_name']} · {data['mess_name']} — {data['date']}"]
+    shown_nut = False
     for meal in data["meals"]:
         lines.append(f"\n**{meal['meal']}**  _{meal['timing']}_\n{meal['items']}")
+        n = nut.get(meal["meal"].strip().lower())
+        if isinstance(n, dict) and any(k in n for k in ("calories", "protein_g")):
+            lines.append(
+                f"_~{n.get('calories', '?')} kcal · protein {n.get('protein_g', '?')} g · "
+                f"carbs {n.get('carbs_g', '?')} g · fat {n.get('fat_g', '?')} g · "
+                f"fibre {n.get('fiber_g', '?')} g_"
+                + (f"  — {n['note']}" if n.get("note") else ""))
+            shown_nut = True
 
     picked_from_profile = bool(session) and not explicit_h and not explicit_m
     note = ("_Live from MessIT (VinnovateIT), not VTOP. "
             + ("Hostel/mess auto-picked from your VTOP profile — "
                if picked_from_profile else "")
             + "say e.g. “LH veg mess menu tomorrow” to change._")
+    if want_nutrition:
+        note += ("\n_Nutrition is a rough AI estimate for one typical plate/serving "
+                 "(the mains + a couple of sides) — not measured, treat as a ballpark._"
+                 if shown_nut else
+                 "\n_Couldn't estimate nutrition this time — try again in a moment._")
     return _reply("\n".join(lines) + "\n\n" + note,
                   profile=session.profile if session else None)
 
@@ -1000,9 +1023,12 @@ def process_chat(user_id: str, msg: str, surface: str = "web") -> Dict[str, Any]
         return _reply(f"❌ VTOP login failed: {result.get('message', 'unknown error')}. "
                       f"Reply `login <username> <password>` to try again.")
 
-    # 4b. Hostel mess menu — MessIT live feed, public (no VTOP login needed);
-    # if a session exists, hostel/mess default to the student's VTOP profile.
-    if any(t in msg_low for t in MESS_MENU_TRIGGERS):
+    # 4b. Hostel mess menu (+ optional per-serving nutrition) — MessIT live feed,
+    # public (no VTOP login); a session defaults hostel/mess to the VTOP profile.
+    if (any(t in msg_low for t in MESS_MENU_TRIGGERS)
+            or (any(t in msg_low for t in NUTRITION_TRIGGERS)
+                and any(w in msg_low for w in ("mess", "menu", "breakfast", "lunch",
+                                               "dinner", "snacks", "meal")))):
         return _mess_menu_reply(vtop, user_id, msg_low)
 
     # 5. Resolve the connected student (live session only — no cached defaults)

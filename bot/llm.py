@@ -16,6 +16,35 @@ from google.auth.transport.requests import Request as GoogleAuthRequest
 
 logger = logging.getLogger("vit.llm")
 
+
+def _loads_lenient(text: str):
+    """json.loads with a few cheap repairs for LLM output: strip ``` fences,
+    drop trailing commas, and if it was cut off mid-object, close it up to the
+    last complete top-level entry."""
+    import re as _re
+    t = text.strip()
+    if t.startswith("```"):
+        t = t.strip("`")
+        t = t[4:].strip() if t[:4].lower() == "json" else t.strip()
+    start = t.find("{")
+    if start > 0:
+        t = t[start:]
+    for attempt in (t,
+                    _re.sub(r",\s*([}\]])", r"\1", t),
+                    _re.sub(r",\s*([}\]])", r"\1", t[:t.rfind("}") + 1]) if "}" in t else t):
+        try:
+            return json.loads(attempt)
+        except Exception:
+            continue
+    # last resort: keep only whole `"Key": { ... }` blocks and wrap them
+    blocks = _re.findall(r'"[^"]+"\s*:\s*\{[^{}]*\}', t)
+    if blocks:
+        try:
+            return json.loads("{" + ",".join(blocks) + "}")
+        except Exception:
+            pass
+    return {}
+
 VIT_SYSTEM_PROMPT = """You are VITopia AI — a live, context-aware academic & campus assistant for students of Vellore Institute of Technology.
 
 What you can help with:
@@ -224,6 +253,58 @@ class GeminiChat:
             except Exception as e:
                 logger.error(f"Study-plan generation exception: {e}")
         return ""
+
+    def estimate_meal_nutrition(self, meals: List[Dict[str, str]]) -> Dict[str, Any]:
+        """Rough per-serving nutrition for each mess meal, estimated by the model.
+        `meals` = [{"meal": "Breakfast", "items": "dish, dish, ..."}, ...].
+        Returns {meal_name: {calories, protein_g, carbs_g, fat_g, fiber_g, note}}
+        — empty dict if the estimate can't be produced/parsed."""
+        meals = [m for m in meals if m.get("items")]
+        if not meals:
+            return {}
+        names = [m["meal"] for m in meals]
+        listing = "\n".join(f'{m["meal"]} — items: {m["items"]}' for m in meals)
+        prompt = (
+            "Estimate the nutrition of ONE realistic single serving of each meal below "
+            "— a normal plate a student actually takes in an Indian college hostel mess "
+            "(the mains plus a couple of sides, NOT every listed item, NOT unlimited "
+            "quantity). Indian food.\n\n"
+            "Output ONLY this JSON shape and nothing else:\n"
+            '{"<MealName>": {"calories": <int kcal>, "protein_g": <int>, '
+            '"carbs_g": <int>, "fat_g": <int>, "fiber_g": <int>, "note": "<=12 words"}}\n\n'
+            f"Use EXACTLY these strings as the top-level keys: {', '.join(names)}. "
+            "Each value is ONE object of totals for that whole plate — do NOT break it "
+            "down per dish, do NOT nest.\n\n"
+            f"{listing}"
+        )
+        url = (f"https://{self.location}-aiplatform.googleapis.com/v1/projects/"
+               f"{self.project_id}/locations/{self.location}/publishers/google/"
+               f"models/{self.model_name}:generateContent")
+        payload = {
+            "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+            "generationConfig": {
+                "temperature": 0.2,
+                "maxOutputTokens": 2048,
+                "responseMimeType": "application/json",
+                "thinkingConfig": {"thinkingBudget": 0},
+            },
+        }
+        try:
+            res = requests.post(url, headers=self._get_auth_header(),
+                                json=payload, timeout=45)
+            if res.status_code != 200:
+                logger.error(f"Nutrition API {res.status_code}: {res.text[:200]}")
+                return {}
+            cands = res.json().get("candidates", [])
+            if not cands or "content" not in cands[0]:
+                return {}
+            text = "".join(p.get("text", "")
+                           for p in cands[0]["content"].get("parts", [])).strip()
+            data = _loads_lenient(text)
+            return data if isinstance(data, dict) else {}
+        except Exception as e:
+            logger.warning(f"Nutrition estimate failed: {e}")
+            return {}
 
     def _format_student_context(self, profile: Optional[Dict[str, Any]]) -> str:
         """Only emit fields that were actually fetched — never substitute defaults."""

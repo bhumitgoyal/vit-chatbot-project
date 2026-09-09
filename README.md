@@ -73,6 +73,13 @@ on Telegram) work **without login**; a connected session auto-selects the
 hostel + mess from the student's VTOP profile. Answers are labelled as coming
 from MessIT, not VTOP.
 
+Add a nutrition word ("calories", "protein", "nutrition", "macros", …) and
+`GeminiChat.estimate_meal_nutrition()` annotates each meal with a rough
+**per-serving** estimate — calories / protein / carbs / fat / fibre for one
+realistic plate (mains + a couple of sides), returned as JSON and parsed
+leniently. Clearly flagged as a ballpark AI estimate, not measured. The
+plain menu path makes no LLM call.
+
 ## Study plan + assignment reminders
 
 - **Study plan** (`/studyplan`, or "make me a study plan for my weak subjects") —
