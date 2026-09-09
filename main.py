@@ -36,6 +36,7 @@ from bot.hostel_mess_service import HostelMessService
 from bot.proctor_service import ProctorService
 from bot.timetable_mapper import format_day_schedule_block, format_full_week_schedule
 from bot import telegram as tg
+from bot import reminders
 
 logging.basicConfig(
     level=logging.INFO,
@@ -49,9 +50,15 @@ STATIC_DIR.mkdir(parents=True, exist_ok=True)
 # user_id -> {"username", "password", "session_id"} awaiting a CAPTCHA answer
 PENDING_LOGINS: Dict[str, Dict[str, Any]] = {}
 
+# user_id -> (username, password) of the last successful login this process saw.
+# Held only in memory; used to hand credentials to the Firestore-backed reminder
+# registry at enrolment time so the scheduled scan can re-login later.
+LAST_CREDS: Dict[str, tuple] = {}
+
 # Recently handled Telegram update_ids (Telegram re-delivers on slow ACK)
 _TG_SEEN: deque = deque(maxlen=500)
 TG_SECRET = os.environ.get("TELEGRAM_WEBHOOK_SECRET", "")
+CRON_SECRET = os.environ.get("CRON_SECRET", "")
 
 TG_WELCOME = (
     "👋 **VITopia AI** — your VIT academic copilot on Telegram.\n\n"
@@ -59,7 +66,9 @@ TG_WELCOME = (
     "For **your own** records — attendance, marks, CGPA, timetable, exam schedule, "
     "proctor, hostel, fees — connect your VTOP account:\n"
     "`login <your-vtop-username> <your-password>`\n\n"
-    "I'll read the CAPTCHA automatically; if it fails I'll send you the image to type.\n"
+    "I'll read the CAPTCHA automatically; if it fails I'll send you the image to type.\n\n"
+    "**Extras:** /reminders — get pinged before every Digital Assignment deadline · "
+    "/studyplan — a plan + web resources for any subject under 70%.\n"
     "Use /logout to disconnect. Your session is per-chat and not shared."
 )
 
@@ -80,6 +89,8 @@ PERSONAL_STRONG = {
     "class message", "message from faculty", "messages from faculty", "faculty message",
     "who is", "who teaches", "email of", "cabin of", "contact of", "'s email",
     "'s cabin", "'s office", "email", "e-mail", "mail id",
+    "study plan", "revision plan", "recovery plan", "weak subject", "weak subjects",
+    "improve my marks", "improve my grade", "remind me", "assignment reminder",
 }
 
 # Personal only when the message also carries a possessive ("my", "i", …).
@@ -225,6 +236,7 @@ def _start_login(vtop: VTOPService, user_id: str, uname: str, pwd: str) -> Dict[
     """Try the Vertex Vision auto-CAPTCHA solver first; fall back to asking the human."""
     result = vtop.login_with_autocaptcha(user_id, uname, pwd)
     if result.get("status") == "success":
+        LAST_CREDS[user_id] = (uname, pwd)
         return _login_success_reply(vtop, user_id, result)
     if result.get("status") == "needs_manual_captcha":
         PENDING_LOGINS[user_id] = {"username": uname, "password": pwd,
@@ -739,6 +751,105 @@ def _build_dynamic_context(app_state, user_id: str, msg_low: str,
     return "\n\n".join(b for b in blocks if b)
 
 
+# ── study plan (subjects under 70% weighted standing) ────────────────────
+STUDY_PLAN_TRIGGERS = (
+    "study plan", "study schedule", "revision plan", "recovery plan",
+    "improvement plan", "help me improve", "how do i improve", "how to improve my",
+    "resources to study", "study resources", "prepare better", "get better at",
+    "weak subject", "weak subjects", "subjects i am weak", "subjects i'm weak",
+    "where i scored less", "scored less than 70", "scoring low", "boost my marks",
+    "improve my marks", "improve my grade", "improve my score",
+)
+
+
+def _weak_courses_from_marks(marks_rows, threshold: float = 70.0):
+    """Weighted standing per course = Σ weighted / Σ weightage% over graded
+    components. Return the courses below `threshold`, lowest first."""
+    agg: Dict[str, list] = {}
+    for m in marks_rows or []:
+        course = (m.get("course") or "").strip()
+        if not course:
+            continue
+        try:
+            got = float(m.get("weighted"))
+            avail = float(m.get("weightage_pct"))
+        except (TypeError, ValueError):
+            continue
+        if avail <= 0:
+            continue
+        d = agg.setdefault(course, [0.0, 0.0])
+        d[0] += got
+        d[1] += avail
+    weak = []
+    for course, (got, avail) in agg.items():
+        if avail <= 0:
+            continue
+        standing = round(100 * got / avail, 1)
+        if standing < threshold:
+            weak.append({"course": course, "standing": standing})
+    return sorted(weak, key=lambda x: x["standing"])
+
+
+def _build_study_plan(app_state, user_id: str) -> Optional[str]:
+    vtop: VTOPService = app_state.vtop
+    r = vtop.fetch_module(user_id, "marks")
+    if r.get("status") != "ok" or not r.get("data"):
+        return ("_Couldn't read your marks from VTOP just now, so I can't tell which "
+                "subjects need a plan. Try again shortly, or check VTOP → "
+                "Examinations → Marks._")
+    weak = _weak_courses_from_marks(r["data"])
+    if not weak:
+        return ("✅ Every subject with published marks is at or above **70%** weighted "
+                "standing — no recovery plan needed right now.")
+    plan = app_state.llm.generate_study_plan(weak)
+    header = ("### Study plan — subjects under 70% (weighted standing so far)\n"
+              + "\n".join(f"- **{w['course']}** — {w['standing']}%" for w in weak)
+              + "\n\n_Resource links below are pulled live from the web — open each "
+                "to confirm it still works._\n\n")
+    if not plan:
+        return header + "_Web resource lookup is unavailable right now — try again shortly._"
+    return header + plan
+
+
+# ── Telegram assignment reminders ───────────────────────────────────────
+REMINDER_ON_TRIGGERS = (
+    "remind me", "set a reminder", "set reminder", "assignment reminder",
+    "reminders on", "enable reminder", "turn on reminder", "notify me about assignment",
+    "alert me about assignment", "don't let me forget",
+)
+REMINDER_OFF_TRIGGERS = (
+    "reminders off", "stop reminder", "disable reminder", "cancel reminder",
+    "turn off reminder", "no more reminder",
+)
+
+
+def _handle_reminder_enroll(vtop: VTOPService, user_id: str, session, surface: str) -> Dict[str, Any]:
+    if surface != "telegram":
+        return _reply("Assignment reminders push to Telegram. Open **@vitopian_bot** there, "
+                      "`login`, then say “remind me about my assignments”.")
+    if not session:
+        return _reply(LOGIN_HINT)
+    creds = LAST_CREDS.get(user_id)
+    if not creds:
+        return _reply("To set reminders I need you to log in again in this chat first, so I "
+                      "can re-check your assignments on schedule:\n`login <username> <password>`")
+    try:
+        chat_id = int(user_id[2:]) if user_id.startswith("tg") else int(user_id)
+        reminders.enroll(user_id, chat_id, session.register_no, creds[0], creds[1])
+    except Exception as e:
+        logger.error(f"Reminder enrol failed for {user_id}: {e}", exc_info=True)
+        return _reply("⚠️ Couldn't switch reminders on just now — please try again shortly.")
+    r = vtop.fetch_module(user_id, "assignments")
+    pend = r.get("data") or [] if r.get("status") == "ok" else []
+    listing = ("\n".join(f"• {a['course']} — {a['title']} (last date {a['last_date']})"
+                         for a in pend) or "• none pending right now")
+    return _reply(
+        "🔔 **Assignment reminders are on.** I'll message you here **3 days before**, "
+        "**1 day before**, and again on the **due date** for every pending Digital "
+        "Assignment.\n\n"
+        f"**Pending now:**\n{listing}\n\n_Say “reminders off” to stop._")
+
+
 # ── chat endpoint ─────────────────────────────────────────────────────────
 @app.get("/api/debug/vtop")
 def debug_vtop(user_id: str, module: Optional[str] = None):
@@ -802,6 +913,7 @@ def process_chat(user_id: str, msg: str, surface: str = "web") -> Dict[str, Any]
                                     msg.strip().replace(" ", "").upper(),
                                     pend["session_id"], user_id=user_id)
         if result.get("status") == "success":
+            LAST_CREDS[user_id] = (pend["username"], pend["password"])
             PENDING_LOGINS.pop(user_id, None)
             return _login_success_reply(vtop, user_id, result)
         if result.get("captcha_wrong"):
@@ -826,6 +938,29 @@ def process_chat(user_id: str, msg: str, surface: str = "web") -> Dict[str, Any]
             session, profile = relogged, relogged.profile
         else:
             return _reply(LOGIN_HINT)
+
+    # 6a. Telegram assignment reminders (enrol / disable)
+    if any(t in msg_low for t in REMINDER_OFF_TRIGGERS):
+        if surface == "telegram":
+            try:
+                reminders.set_enabled(user_id, False)
+            except Exception as e:
+                logger.warning(f"Reminder disable failed for {user_id}: {e}")
+            return _reply("🔕 Assignment reminders are off. Say “remind me about my "
+                          "assignments” to switch them back on.")
+        return _reply("Assignment reminders are a Telegram feature — manage them in "
+                      "**@vitopian_bot**.")
+    if (any(t in msg_low for t in REMINDER_ON_TRIGGERS)
+            and any(w in msg_low for w in ("assignment", "assig", "deadline", "due", "submit"))):
+        return _handle_reminder_enroll(vtop, user_id, session, surface)
+
+    # 6b. Study plan for weak subjects (<70% weighted standing) + web resources
+    if session and any(t in msg_low for t in STUDY_PLAN_TRIGGERS):
+        plan = _build_study_plan(app.state, user_id)
+        if plan:
+            memory.add_message(user_id, "user", msg)
+            memory.add_message(user_id, "assistant", plan)
+            return _reply(plan, profile=profile)
 
     # 7. Build live-data context (only when authenticated)
     dynamic_context = ""
@@ -872,6 +1007,12 @@ def _tg_map_command(text: str) -> Optional[str]:
             "!Send `login <your-vtop-username> <your-password>` to connect your VTOP account.")
     if cmd in ("logout", "whoami"):
         return cmd
+    if cmd == "reminders":
+        if rest.lower() in ("off", "stop", "disable"):
+            return "reminders off"
+        return "remind me about my assignments"
+    if cmd in ("studyplan", "study_plan", "plan"):
+        return "make me a study plan for my weak subjects"
     return f"{cmd} {rest}".strip()
 
 
@@ -910,6 +1051,18 @@ async def telegram_webhook(request: Request, bg: BackgroundTasks):
     _TG_SEEN.append(uid)
     bg.add_task(_handle_tg_update, parsed)
     return {"ok": True}
+
+
+@app.post("/cron/assignment-reminders")
+def cron_assignment_reminders(request: Request):
+    """Hit by Cloud Scheduler. Re-checks every enrolled student's pending
+    Digital Assignments and pushes Telegram reminders at 3-day / 1-day /
+    due-soon lead times. Sync def so FastAPI runs it off the event loop."""
+    if not CRON_SECRET or request.headers.get("X-Cron-Secret") != CRON_SECRET:
+        raise HTTPException(status_code=403, detail="Forbidden.")
+    stats = reminders.run_scan(app.state.vtop, tg)
+    logger.info(f"Assignment-reminder scan: {stats}")
+    return stats
 
 
 @app.get("/telegram/setup")

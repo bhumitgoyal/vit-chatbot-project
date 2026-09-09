@@ -169,6 +169,62 @@ class GeminiChat:
                 "For your own records, `login <username> <password>` and ask about attendance, "
                 "marks, CGPA, timetable, exam schedule, proctor, hostel or fees.")
 
+    def generate_study_plan(self, weak_courses: List[Dict[str, Any]]) -> str:
+        """Grounded study plan for the courses the student is weak in. Uses the
+        Gemini `google_search` tool so the resource links are real and current;
+        retries once without the tool if grounding isn't available."""
+        if not weak_courses:
+            return ""
+
+        listing = "\n".join(
+            f"- {c['course']} — current weighted standing {c['standing']}%"
+            for c in weak_courses
+        )
+        prompt = (
+            "You are an academic coach for a student at VIT (Vellore Institute of "
+            "Technology). The student is currently BELOW 70% weighted standing in "
+            "these courses:\n"
+            f"{listing}\n\n"
+            "For EACH course, produce this Markdown and nothing else:\n"
+            "### <course code and name>\n"
+            "**Likely weak areas** — 2–4 bullets naming the specific topics that "
+            "usually cost VIT students marks in this subject.\n"
+            "**2-week recovery plan** — a compact day-by-day list (~1–1.5 hrs/day) "
+            "with concrete topics per day.\n"
+            "**Free resources** — 4–6 specific, currently-working links: YouTube "
+            "playlists, NPTEL / SWAYAM courses, official documentation, "
+            "GeeksforGeeks, or MIT OpenCourseWare. Use Google Search to confirm "
+            "each link resolves; give the real page title and full URL.\n\n"
+            "Be terse and practical. No motivational paragraphs, no preamble."
+        )
+
+        contents = [{"role": "user", "parts": [{"text": prompt}]}]
+        url = (f"https://{self.location}-aiplatform.googleapis.com/v1/projects/"
+               f"{self.project_id}/locations/{self.location}/publishers/google/"
+               f"models/{self.model_name}:generateContent")
+        base = {
+            "contents": contents,
+            "generationConfig": {"temperature": 0.4, "maxOutputTokens": 4096},
+        }
+        for payload in ({**base, "tools": [{"googleSearch": {}}]}, base):
+            try:
+                res = requests.post(url, headers=self._get_auth_header(),
+                                    json=payload, timeout=90)
+                if res.status_code == 200:
+                    cands = res.json().get("candidates", [])
+                    if cands and "content" in cands[0]:
+                        parts = cands[0]["content"].get("parts", [])
+                        text = "".join(p.get("text", "") for p in parts).strip()
+                        if text:
+                            return text
+                    logger.warning("Study-plan: empty parts "
+                                   f"(finishReason={cands[0].get('finishReason') if cands else '?'}).")
+                else:
+                    logger.error(f"Study-plan API {res.status_code}: {res.text[:300]}")
+            except Exception as e:
+                logger.error(f"Study-plan generation exception: {e}")
+        return ""
+
     def _format_student_context(self, profile: Optional[Dict[str, Any]]) -> str:
         """Only emit fields that were actually fetched — never substitute defaults."""
         if not profile:

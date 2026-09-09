@@ -61,6 +61,22 @@ Results are cached per module for 5 minutes per session, and a session's own
 scrapes are serialised (`requests.Session` isn't concurrency-safe); different
 users run in parallel on the sync request threadpool.
 
+## Study plan + assignment reminders
+
+- **Study plan** (`/studyplan`, or "make me a study plan for my weak subjects") —
+  groups the live `marks` rows per course, computes the **weighted standing**
+  (Σ weighted ÷ Σ weightage%), and for every course under **70%** asks Gemini —
+  with the `google_search` grounding tool — for weak-area topics, a 2-week
+  day-by-day plan, and 4–6 real, current free resource links (NPTEL, YouTube,
+  official docs, …). Returned verbatim, not re-summarised, so URLs stay intact.
+- **Assignment reminders** (`/reminders`, Telegram only) — enrolment writes an
+  encrypted record to **Firestore** (`assignment_reminders/{user_id}`). A
+  **Cloud Scheduler** job pings `POST /cron/assignment-reminders`
+  (`X-Cron-Secret` header) every 3 h; the handler re-logs each enrolled student
+  in, reads their pending Digital Assignments, and pushes a Telegram nudge at
+  **3 days / 1 day / a few hours** before each `Last Date`, de-duplicated so the
+  same assignment+window is never sent twice. `/reminders off` disables it.
+
 ## Surfaces
 
 - **Web** — `GET /` serves `static/index.html`; the chat client calls `POST /api/chat`
@@ -69,7 +85,7 @@ users run in parallel on the sync request threadpool.
   Telegram chat is its own session (`user_id = "tg<chat_id>"`). Markdown is
   down-converted to Telegram HTML, the CAPTCHA is sent as a photo, and long
   replies are chunked. Commands: `/start`, `/help`, `/login <u> <p>`, `/logout`,
-  `/whoami`.
+  `/whoami`, `/reminders [off]`, `/studyplan`.
 
 ## Run
 
@@ -90,7 +106,11 @@ export TELEGRAM_WEBHOOK_SECRET=$(openssl rand -hex 16)
 `deploy_gcp.sh` builds the image, deploys the `vitopia-agent` service, and — if
 the Telegram vars are set — points `TELEGRAM_WEBHOOK_URL` at
 `<service-url>/telegram/webhook` and calls Telegram `setWebhook`. `--no-cpu-throttling`
-keeps the instance alive long enough to finish the background reply.
+keeps the instance alive long enough to finish the background reply. It also
+enables the Firestore + Cloud Scheduler APIs, creates the `(default)` Firestore
+database if missing, generates/persists `CRON_SECRET`, and creates-or-updates the
+`vitopia-assignment-reminders` scheduler job (every 3 h, Asia/Kolkata) — all
+non-fatal, so a deploy still ships if that IAM isn't granted.
 
 ## Environment
 
