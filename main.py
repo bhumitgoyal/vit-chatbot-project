@@ -17,6 +17,7 @@ import re
 import time
 import logging
 from pathlib import Path
+from datetime import date, timedelta
 from collections import deque
 from contextlib import asynccontextmanager
 from typing import Optional, List, Dict, Any
@@ -37,6 +38,7 @@ from bot.proctor_service import ProctorService
 from bot.timetable_mapper import format_day_schedule_block, format_full_week_schedule
 from bot import telegram as tg
 from bot import reminders
+from bot import messit
 
 logging.basicConfig(
     level=logging.INFO,
@@ -67,7 +69,8 @@ TG_WELCOME = (
     "proctor, hostel, fees — connect your VTOP account:\n"
     "`login <your-vtop-username> <your-password>`\n\n"
     "I'll read the CAPTCHA automatically; if it fails I'll send you the image to type.\n\n"
-    "**Extras:** /reminders — get pinged before every Digital Assignment deadline · "
+    "**Extras:** /mess — today's hostel mess menu (live from MessIT) · "
+    "/reminders — get pinged before every Digital Assignment deadline · "
     "/studyplan — a plan + web resources for any subject under 70%.\n"
     "Use /logout to disconnect. Your session is per-chat and not shared."
 )
@@ -850,6 +853,77 @@ def _handle_reminder_enroll(vtop: VTOPService, user_id: str, session, surface: s
         f"**Pending now:**\n{listing}\n\n_Say “reminders off” to stop._")
 
 
+# ── hostel mess menu (MessIT live feed — public, no VTOP login) ─────────
+MESS_MENU_TRIGGERS = (
+    "mess menu", "mess timing", "mess timings", "what's for breakfast",
+    "whats for breakfast", "what's for lunch", "whats for lunch",
+    "what's for dinner", "whats for dinner", "what's for snacks",
+    "whats for snacks", "what's cooking", "whats cooking", "breakfast menu",
+    "lunch menu", "dinner menu", "snacks menu", "today's menu", "todays menu",
+    "menu today", "menu for today", "menu tomorrow", "what's in the mess",
+    "whats in the mess", "mess food", "food in the mess", "what is the mess menu",
+)
+_WEEKDAYS = ("monday", "tuesday", "wednesday", "thursday", "friday",
+             "saturday", "sunday")
+
+
+def _parse_menu_date(msg_low: str) -> date:
+    today = date.today()
+    if "day after tomorrow" in msg_low:
+        return today + timedelta(days=2)
+    if "tomorrow" in msg_low:
+        return today + timedelta(days=1)
+    if "yesterday" in msg_low:
+        return today - timedelta(days=1)
+    m = re.search(r"\b(20\d{2})-(\d{1,2})-(\d{1,2})\b", msg_low)
+    if m:
+        try:
+            return date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+        except ValueError:
+            pass
+    for i, wd in enumerate(_WEEKDAYS):
+        if wd in msg_low:
+            return today + timedelta(days=(i - today.weekday()) % 7)
+    return today
+
+
+def _mess_menu_reply(vtop: VTOPService, user_id: str, msg_low: str) -> Dict[str, Any]:
+    session = vtop.get_session(user_id)
+    prof = session.profile if session else {}
+    default_h = messit.hostel_from_gender(prof.get("gender")) if prof.get("gender") else 1
+    default_m = messit.mess_from_profile_string(prof.get("mess")) if prof.get("mess") else 1
+    explicit_h = messit.resolve_hostel(msg_low, 0)
+    explicit_m = messit.resolve_mess(msg_low, 0)
+    h = explicit_h or default_h
+    m = explicit_m or default_m
+    target = _parse_menu_date(msg_low)
+
+    only = 0
+    for name, mtype in messit.MEAL_TYPE_BY_NAME.items():
+        if name in msg_low:
+            only = mtype
+            break
+
+    data = messit.menu_for(h, m, target, only_meal=only)
+    if not data:
+        return _reply(
+            f"Couldn't get the {messit.MESS_NAMES.get(m, '')} menu for "
+            f"{messit.HOSTEL_NAMES.get(h, '')} on {target.isoformat()} from MessIT just "
+            f"now. Check **messit.vinnovateit.com** directly.")
+
+    lines = [f"### {data['hostel_name']} · {data['mess_name']} — {data['date']}"]
+    for meal in data["meals"]:
+        lines.append(f"\n**{meal['meal']}**  _{meal['timing']}_\n{meal['items']}")
+
+    picked_from_profile = bool(session) and not explicit_h and not explicit_m
+    note = ("_Live from MessIT (VinnovateIT), not VTOP. "
+            + ("Hostel/mess auto-picked from your VTOP profile — "
+               if picked_from_profile else "")
+            + "say e.g. “LH veg mess menu tomorrow” to change._")
+    return _reply("\n".join(lines) + "\n\n" + note,
+                  profile=session.profile if session else None)
+
+
 # ── chat endpoint ─────────────────────────────────────────────────────────
 @app.get("/api/debug/vtop")
 def debug_vtop(user_id: str, module: Optional[str] = None):
@@ -925,6 +999,11 @@ def process_chat(user_id: str, msg: str, surface: str = "web") -> Dict[str, Any]
         PENDING_LOGINS.pop(user_id, None)
         return _reply(f"❌ VTOP login failed: {result.get('message', 'unknown error')}. "
                       f"Reply `login <username> <password>` to try again.")
+
+    # 4b. Hostel mess menu — MessIT live feed, public (no VTOP login needed);
+    # if a session exists, hostel/mess default to the student's VTOP profile.
+    if any(t in msg_low for t in MESS_MENU_TRIGGERS):
+        return _mess_menu_reply(vtop, user_id, msg_low)
 
     # 5. Resolve the connected student (live session only — no cached defaults)
     session = vtop.get_session(user_id)
@@ -1013,6 +1092,8 @@ def _tg_map_command(text: str) -> Optional[str]:
         return "remind me about my assignments"
     if cmd in ("studyplan", "study_plan", "plan"):
         return "make me a study plan for my weak subjects"
+    if cmd in ("mess", "menu", "messmenu"):
+        return f"mess menu {rest}".strip()
     return f"{cmd} {rest}".strip()
 
 

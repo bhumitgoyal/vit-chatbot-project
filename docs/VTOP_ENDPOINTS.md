@@ -135,3 +135,23 @@ real email `spmeenakshi@vit.ac.in` for MEENAKSHI S P (the static fallback had
 guessed `meenakshi.sp@vit.ac.in`, wrong). The chat now also triggers a lookup
 on a bare `"<Name> email"` / `"who is professor <Name>"`, not only when the
 word "faculty" appears.
+
+## Non-VTOP: MessIT mess-menu feed (added 2026-09-09)
+
+The hostel mess menu is **not** on VTOP. `bot/messit.py` reads VinnovateIT's
+MessIT static feed instead:
+
+    GET https://messit.vinnovateit.com/menu-data/hostel-{H}-mess-{M}.json
+        H = 1 Men's Hostel (MH) · 2 Ladies' Hostel (LH)
+        M = 1 Special Mess · 2 Veg Mess · 3 Non-Veg Mess   (all 6 files exist)
+
+    { hostel, mess, menu: [ { date: "YYYY-MM-DD",
+        menu: [ { type, menu: "comma, separated, items" } ] } ] }
+        type: 1 Breakfast · 2 Lunch · 3 Snacks · 4 Dinner
+
+One calendar month per file, refreshed monthly → cached 1 h. Meal timings are
+the MessIT app's own fixed slots: breakfast `7:00–9:00` (`7:30–9:30` Sat/Sun),
+lunch `12:30–14:30`, snacks `16:30–18:15`, dinner `19:00–21:00`. Mapping and
+timings were lifted from the site's `page-*.js` bundle. Public — no VTOP
+session needed; a connected session auto-picks H from `gender` and M from the
+profile's `Mess Information` string.

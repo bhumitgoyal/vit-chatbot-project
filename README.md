@@ -61,6 +61,18 @@ Results are cached per module for 5 minutes per session, and a session's own
 scrapes are serialised (`requests.Session` isn't concurrency-safe); different
 users run in parallel on the sync request threadpool.
 
+## Live mess menu (external feed)
+
+`bot/messit.py` reads VinnovateIT's **MessIT** static feed —
+`https://messit.vinnovateit.com/menu-data/hostel-{H}-mess-{M}.json`
+(`H`: 1 Men's / 2 Ladies'; `M`: 1 Special / 2 Veg / 3 Non-Veg) — a whole
+month per file, cached 1 h. `type` 1–4 = Breakfast/Lunch/Snacks/Dinner;
+timings are the app's fixed slots (breakfast shifts 30 min on weekends).
+"mess menu today" / "what's for dinner at LH veg mess tomorrow" (or `/mess`
+on Telegram) work **without login**; a connected session auto-selects the
+hostel + mess from the student's VTOP profile. Answers are labelled as coming
+from MessIT, not VTOP.
+
 ## Study plan + assignment reminders
 
 - **Study plan** (`/studyplan`, or "make me a study plan for my weak subjects") —
@@ -85,7 +97,7 @@ users run in parallel on the sync request threadpool.
   Telegram chat is its own session (`user_id = "tg<chat_id>"`). Markdown is
   down-converted to Telegram HTML, the CAPTCHA is sent as a photo, and long
   replies are chunked. Commands: `/start`, `/help`, `/login <u> <p>`, `/logout`,
-  `/whoami`, `/reminders [off]`, `/studyplan`.
+  `/whoami`, `/mess`, `/reminders [off]`, `/studyplan`.
 
 ## Run
 
