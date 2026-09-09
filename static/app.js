@@ -1,6 +1,6 @@
 /**
  * static/app.js
- * Minimalist monochrome client with tab switching (Copilot & Documentation).
+ * Minimal chat client with tab switching (Chat & Docs).
  */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const messageInput = document.getElementById("messageInput");
   const sendBtn = document.getElementById("sendBtn");
   const clearChatBtn = document.getElementById("clearChatBtn");
+  const studentChip = document.getElementById("studentStatusChip");
   const chipStudentName = document.getElementById("chipStudentName");
   const chipRegNo = document.getElementById("chipRegNo");
   
@@ -90,11 +91,8 @@ document.addEventListener("DOMContentLoaded", () => {
         await fetch(`/api/chat/clear/${USER_ID}`, { method: "POST" });
         chatMessages.innerHTML = `
           <div class="message-wrapper assistant">
-            <div class="avatar"><i class="fa-solid fa-microchip"></i></div>
             <div class="message-content">
-              <div class="message-sender">VITopia Copilot</div>
-              <div class="message-body"><p>Conversation cleared. Ready for your questions!</p></div>
-              <span class="message-time">Just now</span>
+              <div class="message-body"><p>Conversation cleared.</p></div>
             </div>
           </div>
         `;
@@ -159,14 +157,12 @@ document.addEventListener("DOMContentLoaded", () => {
     div.className = "message-wrapper assistant";
     let bodyHTML = typeof marked !== "undefined" ? marked.parse(rawMarkdown) : escapeHTML(rawMarkdown);
     if (captchaImage) {
-      bodyHTML += `<div style="background:#fff;padding:8px;display:inline-block;margin:8px 0;border:1px solid #6366f1;">
+      bodyHTML += `<div style="background:#fff;padding:6px;display:inline-block;margin:8px 0;border:1px solid var(--border);border-radius:4px;">
         <img src="${captchaImage}" alt="VTOP CAPTCHA" style="height:44px;display:block;"></div>`;
     }
 
     div.innerHTML = `
-      <div class="avatar"><i class="fa-solid fa-microchip"></i></div>
       <div class="message-content">
-        <div class="message-sender">VITopia Copilot</div>
         <div class="message-body">${bodyHTML}</div>
         <span class="message-time">${timeStr}</span>
       </div>
@@ -178,10 +174,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const div = document.createElement("div");
     div.className = "message-wrapper assistant loading";
     div.innerHTML = `
-      <div class="avatar"><i class="fa-solid fa-microchip"></i></div>
       <div class="message-content">
-        <div class="message-sender">VITopia Copilot</div>
-        <div class="message-body" style="color: var(--text-muted); font-style: italic;">Processing with Google Vertex AI...</div>
+        <div class="message-body">Thinking&hellip;</div>
       </div>
     `;
     chatMessages.appendChild(div);
@@ -192,9 +186,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (profile && profile.register_no) {
       if (chipStudentName) chipStudentName.textContent = profile.student_name || "Connected";
       if (chipRegNo) chipRegNo.textContent = profile.register_no;
+      if (studentChip) studentChip.classList.add("connected");
     } else {
       if (chipStudentName) chipStudentName.textContent = "Not connected";
-      if (chipRegNo) chipRegNo.textContent = "—";
+      if (chipRegNo) chipRegNo.textContent = "";
+      if (studentChip) studentChip.classList.remove("connected");
     }
   }
 
