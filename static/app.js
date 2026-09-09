@@ -84,6 +84,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  const AVATAR = `<img class="avatar" src="/static/vit-logo.png" alt="VIT">`;
+
   // Clear chat
   clearChatBtn.addEventListener("click", async () => {
     if (confirm("Clear conversation history?")) {
@@ -91,6 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
         await fetch(`/api/chat/clear/${USER_ID}`, { method: "POST" });
         chatMessages.innerHTML = `
           <div class="message-wrapper assistant">
+            ${AVATAR}
             <div class="message-content">
               <div class="message-body"><p>Conversation cleared.</p></div>
             </div>
@@ -162,6 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     div.innerHTML = `
+      ${AVATAR}
       <div class="message-content">
         <div class="message-body">${bodyHTML}</div>
         <span class="message-time">${timeStr}</span>
@@ -174,6 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const div = document.createElement("div");
     div.className = "message-wrapper assistant loading";
     div.innerHTML = `
+      ${AVATAR}
       <div class="message-content">
         <div class="message-body">Thinking&hellip;</div>
       </div>
